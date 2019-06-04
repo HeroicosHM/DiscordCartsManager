@@ -58,13 +58,13 @@ start_time = time.time()
 conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
 cur = conn.cursor(pymysql.cursors.DictCursor)
 
-create_db = """CREATE TABLE IF NOT EXISTS """ + adi_table + """ (ID MEDIUMINT NOT NULL AUTO_INCREMENT, Title text, Link text, Email text, Password text, Size text, Desktop text, Mobile text, PID text, Thumbnail text, MessageID text, Timestamp text, Proxy text, HMAC text, PRIMARY KEY (ID));"""
+create_db = """CREATE TABLE IF NOT EXISTS """ + adi_table + """ (ID MEDIUMINT, Title text, Link text, Email text, Password text, Size text, Desktop text, Mobile text, PID text, Thumbnail text, MessageID text, Timestamp text, Proxy text, HMAC text);"""
 cur.execute(create_db)
-create_db = """CREATE TABLE IF NOT EXISTS """ + latch_table + """ (ID MEDIUMINT NOT NULL AUTO_INCREMENT, Title text, Link text, Email text, Password text, Size text, Region text, PID text, Thumbnail text, MessageID text, PRIMARY KEY (ID));"""
+create_db = """CREATE TABLE IF NOT EXISTS """ + latch_table + """ (ID MEDIUMINT, Title text, Link text, Email text, Password text, Size text, Region text, PID text, Thumbnail text, MessageID text);"""
 cur.execute(create_db)
-create_db = """CREATE TABLE IF NOT EXISTS """ + phantom_table + """ (ID MEDIUMINT NOT NULL AUTO_INCREMENT, Title text, Description text, Name text, Size text, Profile text, Site text, Account text, MessageID text, PRIMARY KEY (ID));"""
+create_db = """CREATE TABLE IF NOT EXISTS """ + phantom_table + """ (ID MEDIUMINT, Title text, Description text, Name text, Size text, Profile text, Site text, Account text, MessageID text);"""
 cur.execute(create_db)
-create_db = """CREATE TABLE IF NOT EXISTS """ + balko_table + """ (ID MEDIUMINT NOT NULL AUTO_INCREMENT, Title text, Link text, Email text, Password text, Size text, Region text, PID text, Thumbnail text, MessageID text, PRIMARY KEY (ID));"""
+create_db = """CREATE TABLE IF NOT EXISTS """ + balko_table + """ (ID MEDIUMINT, Title text, Link text, Email text, Password text, Size text, Region text, PID text, Thumbnail text, MessageID text);"""
 cur.execute(create_db)
 conn.commit()
 
@@ -211,15 +211,19 @@ async def on_message(message):
 
 					message_id = message.id
 
-					#Insert all of that information into the database for that specific cart type.
-					insert_data = """INSERT INTO  """ + adi_table + """ (Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
-					cur.execute(insert_data)
-					conn.commit()
-
 					sql = "SELECT * FROM `" + adi_table + "` ORDER BY ID DESC LIMIT 1"
 					cur.execute(sql)
 					entry_number = cur.fetchall()
-					entry_number = entry_number[0]['ID']
+					print(str(entry_number))
+					if len(entry_number) == 0:
+						entry_number = str(1)
+					else:
+						entry_number = str(entry_number[0]['ID'] + 1)
+
+					#Insert all of that information into the database for that specific cart type.
+					insert_data = """INSERT INTO  """ + adi_table + """ (ID, Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + entry_number + """','""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
+					cur.execute(insert_data)
+					conn.commit()
 
 					#Send the reformatted cart into the public cart channel.
 					embed = discord.Embed(
@@ -253,6 +257,7 @@ async def on_message(message):
 						icon_url = footer_icon
 					)
 					r = await bot.send_message(discord.Object(id=carts_formatted_channel), embed = embed)
+					await bot.add_reaction(r, "🛒")
 					data['AdiSplashMessages'].append(r.id)
 					file = open(data_file, 'w+')
 					file.write(json.dumps(data, indent=4, sort_keys=True))
@@ -282,14 +287,19 @@ async def on_message(message):
 
 					message_id = message.id
 
-					insert_data = """INSERT INTO  """ + latch_table + """ (Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
-					cur.execute(insert_data)
-					conn.commit()
-
 					sql = "SELECT * FROM `" + latch_table + "` ORDER BY ID DESC LIMIT 1"
 					cur.execute(sql)
 					entry_number = cur.fetchall()
-					entry_number = entry_number[0]['ID']
+					print(str(entry_number))
+					if len(entry_number) == 0:
+						entry_number = str(1)
+					else:
+						entry_number = str(entry_number[0]['ID'] + 1)
+
+					#Insert all of that information into the database for that specific cart type.
+					insert_data = """INSERT INTO  """ + latch_table + """ (ID, Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + entry_number + """','""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
+					cur.execute(insert_data)
+					conn.commit()
 
 					embed = discord.Embed(
 						title = title,
@@ -322,6 +332,7 @@ async def on_message(message):
 						icon_url = footer_icon
 					)
 					r = await bot.send_message(discord.Object(id=carts_formatted_channel), embed = embed)
+					await bot.add_reaction(r, "🛒")
 					data['LatchKeyMessages'].append(r.id)
 					file = open(data_file, 'w+')
 					file.write(json.dumps(data, indent=4, sort_keys=True))
@@ -344,14 +355,19 @@ async def on_message(message):
 
 					message_id = message.id
 
-					insert_data = """INSERT INTO  """ + phantom_table + """ (Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
-					cur.execute(insert_data)
-					conn.commit()
-
 					sql = "SELECT * FROM `" + phantom_table + "` ORDER BY ID DESC LIMIT 1"
 					cur.execute(sql)
 					entry_number = cur.fetchall()
-					entry_number = entry_number[0]['ID']
+					print(str(entry_number))
+					if len(entry_number) == 0:
+						entry_number = str(1)
+					else:
+						entry_number = str(entry_number[0]['ID'] + 1)
+
+					#Insert all of that information into the database for that specific cart type.
+					insert_data = """INSERT INTO  """ + phantom_table + """ (ID, Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + entry_number + """','""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
+					cur.execute(insert_data)
+					conn.commit()
 
 					embed = discord.Embed(
 						title = title,
@@ -376,6 +392,7 @@ async def on_message(message):
 						icon_url = footer_icon
 					)
 					r = await bot.send_message(discord.Object(id=carts_formatted_channel), embed = embed)
+					await bot.add_reaction(r, "🛒")
 					data['PhantomMessages'].append(r.id)
 					file = open(data_file, 'w+')
 					file.write(json.dumps(data, indent=4, sort_keys=True))
@@ -406,14 +423,19 @@ async def on_message(message):
 
 					message_id = message.id
 
-					insert_data = """INSERT INTO  """ + balko_table + """ (Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
-					cur.execute(insert_data)
-					conn.commit()
-
 					sql = "SELECT * FROM `" + balko_table + "` ORDER BY ID DESC LIMIT 1"
 					cur.execute(sql)
 					entry_number = cur.fetchall()
-					entry_number = entry_number[0]['ID']
+					print(str(entry_number))
+					if len(entry_number) == 0:
+						entry_number = str(1)
+					else:
+						entry_number = str(entry_number[0]['ID'] + 1)
+
+					#Insert all of that information into the database for that specific cart type.
+					insert_data = """INSERT INTO  """ + balko_table + """ (ID, Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + entry_number + """','""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
+					cur.execute(insert_data)
+					conn.commit()
 
 					embed = discord.Embed(
 						title = title,
@@ -446,17 +468,15 @@ async def on_message(message):
 							url = footer_icon
 						)
 					r = await bot.send_message(discord.Object(id=carts_formatted_channel), embed = embed)
+					await bot.add_reaction(r, "🛒")
 					data['BalkoMessages'].append(r.id)
 					file = open(data_file, 'w+')
 					file.write(json.dumps(data, indent=4, sort_keys=True))
 					file.close()
-			#Add the intial reaction from the bot to make it clear what reaction people will add to claim the cart.
-			elif str(message.channel.id) == carts_formatted_channel and message.author.id == bot.user.id:
-				await bot.add_reaction(message, "🛒")
 			else:
 				pass
 
-			#This chunk will handle claiming the carts.
+#This chunk will handle claiming the carts.
 @bot.event
 async def on_socket_raw_receive(the_reaction):
 	#Gets the event and makes sure it is a reaction that was added.
@@ -494,11 +514,14 @@ async def on_socket_raw_receive(the_reaction):
 				message = await bot.get_message(my_channel, message_id)
 				await bot.clear_reactions(message)
 				diction = message.embeds[0]
-				cart_text = diction['footer']['text']
+				cart_text = diction['footer']['text'].split("|")[-1]
 				cart_number = int(re.search(r'\d+', cart_text).group(0))
+				print("Cart Number " + str(cart_number))
 				sql = """SELECT * FROM  """ + adi_table + """ WHERE ID = %s""" % cart_number
 				cur.execute(sql)
-				cart_info = cur.fetchall()[0]
+				cart_info = cur.fetchall()
+				print(cart_info)
+				cart_info = cart_info[0]
 				cart_id = cart_info['ID']
 				cart_title = cart_info['Title']
 				cart_link = cart_info['Link']
