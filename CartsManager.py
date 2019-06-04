@@ -58,13 +58,13 @@ start_time = time.time()
 conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
 cur = conn.cursor(pymysql.cursors.DictCursor)
 
-create_db = """CREATE TABLE IF NOT EXISTS """ + adi_table + """ (ID text, Title text, Link text, Email text, Password text, Size text, Desktop text, Mobile text, PID text, Thumbnail text, MessageID text, Timestamp text, Proxy text, HMAC text);"""
+create_db = """CREATE TABLE IF NOT EXISTS """ + adi_table + """ (ID INT NOT NULL IDENTITY PRIMARY KEY, Title text, Link text, Email text, Password text, Size text, Desktop text, Mobile text, PID text, Thumbnail text, MessageID text, Timestamp text, Proxy text, HMAC text);"""
 cur.execute(create_db)
-create_db = """CREATE TABLE IF NOT EXISTS """ + latch_table + """ (ID text, Title text, Link text, Email text, Password text, Size text, Region text, PID text, Thumbnail text, MessageID text);"""
+create_db = """CREATE TABLE IF NOT EXISTS """ + latch_table + """ (ID INT NOT NULL IDENTITY PRIMARY KEY, Title text, Link text, Email text, Password text, Size text, Region text, PID text, Thumbnail text, MessageID text);"""
 cur.execute(create_db)
-create_db = """CREATE TABLE IF NOT EXISTS """ + phantom_table + """ (ID text, Title text, Description text, Name text, Size text, Profile text, Site text, Account text, MessageID text);"""
+create_db = """CREATE TABLE IF NOT EXISTS """ + phantom_table + """ (ID INT NOT NULL IDENTITY PRIMARY KEY, Title text, Description text, Name text, Size text, Profile text, Site text, Account text, MessageID text);"""
 cur.execute(create_db)
-create_db = """CREATE TABLE IF NOT EXISTS """ + balko_table + """ (ID text, Title text, Link text, Email text, Password text, Size text, Region text, PID text, Thumbnail text, MessageID text);"""
+create_db = """CREATE TABLE IF NOT EXISTS """ + balko_table + """ (ID INT NOT NULL IDENTITY PRIMARY KEY, Title text, Link text, Email text, Password text, Size text, Region text, PID text, Thumbnail text, MessageID text);"""
 cur.execute(create_db)
 conn.commit()
 
@@ -209,14 +209,17 @@ async def on_message(message):
 					except:
 						thumbnail = "N/A"
 
-					entry_number = str(len(data['LatchKeyMessages']) + len(data['AdiSplashMessages']) + len(data['PhantomMessages']) + len(data['BalkoMessages']) + 1)
-
 					message_id = message.id
 
 					#Insert all of that information into the database for that specific cart type.
-					insert_data = """INSERT INTO  """ + adi_table + """ (ID, Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + entry_number + """', '""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
+          insert_data = """INSERT INTO  """ + adi_table + """ (Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
 					cur.execute(insert_data)
 					conn.commit()
+
+					sql = "SELECT * FROM `" + adi_table + "` ORDER BY ID DESC LIMIT 1"
+					cur.execute(sql)
+					entry_number = cur.fetchall()
+					entry_number = entry_number[0]['ID']
 
 					#Send the reformatted cart into the public cart channel.
 					embed = discord.Embed(
@@ -247,7 +250,7 @@ async def on_message(message):
 						)
 					embed.set_footer(
 						text = "{} | Cart #{}".format(footer_text, entry_number),
-						icon_url = bot.user.avatar_url
+						icon_url = footer_icon
 					)
 					r = await bot.send_message(discord.Object(id=carts_formatted_channel), embed = embed)
 					data['AdiSplashMessages'].append(r.id)
@@ -277,13 +280,16 @@ async def on_message(message):
 					except:
 						thumbnail = "N/A"
 
-					entry_number = str(len(data['LatchKeyMessages']) + len(data['AdiSplashMessages']) + len(data['PhantomMessages']) + len(data['BalkoMessages']) + 1)
-
 					message_id = message.id
 
-					insert_data = """INSERT INTO  """ + latch_table + """ (ID, Title, Link, Email, Password, Size, Region, PID, Thumbnail, MessageID) VALUES ('""" + entry_number + """', '""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + region + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """');"""
+          insert_data = """INSERT INTO  """ + latch_table + """ (Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
 					cur.execute(insert_data)
 					conn.commit()
+
+					sql = "SELECT * FROM `" + latch_table + "` ORDER BY ID DESC LIMIT 1"
+					cur.execute(sql)
+					entry_number = cur.fetchall()
+					entry_number = entry_number[0]['ID']
 
 					embed = discord.Embed(
 						title = title,
@@ -313,7 +319,7 @@ async def on_message(message):
 						)
 					embed.set_footer(
 						text = "{} | Cart #{}".format(footer_text, entry_number),
-						icon_url = bot.user.avatar_url
+						icon_url = footer_icon
 					)
 					r = await bot.send_message(discord.Object(id=carts_formatted_channel), embed = embed)
 					data['LatchKeyMessages'].append(r.id)
@@ -336,13 +342,16 @@ async def on_message(message):
 						elif 'Account' in item['name']:
 							account = item['value']
 
-					entry_number = str(len(data['LatchKeyMessages']) + len(data['AdiSplashMessages']) + len(data['PhantomMessages']) + len(data['BalkoMessages']) + 1)
-
 					message_id = message.id
 
-					insert_data = """INSERT INTO  """ + phantom_table + """ (ID, Title, Description, Name, Size, Profile, Site, Account, MessageID) VALUES ('""" + entry_number + """', '""" + title + """', '""" + description + """', '""" + name + """', '""" + size + """', '""" + profile + """', '""" + site + """', '""" + account + """','""" + message_id + """');"""
+          insert_data = """INSERT INTO  """ + phantom_table + """ (Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
 					cur.execute(insert_data)
 					conn.commit()
+
+					sql = "SELECT * FROM `" + phantom_table + "` ORDER BY ID DESC LIMIT 1"
+					cur.execute(sql)
+					entry_number = cur.fetchall()
+					entry_number = entry_number[0]['ID']
 
 					embed = discord.Embed(
 						title = title,
@@ -364,7 +373,7 @@ async def on_message(message):
 					)
 					embed.set_footer(
 						text = "{} | Cart #{}".format(footer_text, entry_number),
-						icon_url = bot.user.avatar_url
+						icon_url = footer_icon
 					)
 					r = await bot.send_message(discord.Object(id=carts_formatted_channel), embed = embed)
 					data['PhantomMessages'].append(r.id)
@@ -395,13 +404,16 @@ async def on_message(message):
 					except:
 						thumbnail = "N/A"
 
-					entry_number = str(len(data['LatchKeyMessages']) + len(data['AdiSplashMessages']) + len(data['PhantomMessages']) + len(data['BalkoMessages']) + 1)
-
 					message_id = message.id
 
-					insert_data = """INSERT INTO  """ + balko_table + """ (ID, Title, Link, Email, Password, Size, Region, PID, Thumbnail, MessageID) VALUES ('""" + entry_number + """', '""" + title + """', '""" + url + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + region + """', '""" + pid + """', '""" + thumbnail + """', '""" + message_id + """');"""
+          insert_data = """INSERT INTO  """ + balko_table + """ (Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
 					cur.execute(insert_data)
 					conn.commit()
+
+					sql = "SELECT * FROM `" + balko_table + "` ORDER BY ID DESC LIMIT 1"
+					cur.execute(sql)
+					entry_number = cur.fetchall()
+					entry_number = entry_number[0]['ID']
 
 					embed = discord.Embed(
 						title = title,
@@ -431,7 +443,7 @@ async def on_message(message):
 						)
 					else:
 						embed.set_thumbnail(
-							url = bot.user.avatar_url
+							url = footer_icon
 						)
 					r = await bot.send_message(discord.Object(id=carts_formatted_channel), embed = embed)
 					data['BalkoMessages'].append(r.id)
@@ -549,9 +561,9 @@ async def on_socket_raw_receive(the_reaction):
 					value = cart_timestamp,
 					inline = False
 				)
-				embed.set_footer(
+        embed.set_footer(
 					text = "{} | Cart #{}".format(footer_text, cart_id),
-					icon_url = bot.user.avatar_url
+					icon_url = footer_icon
 				)
 				if cart_thumbnail == "N/A":
 					embed.set_thumbnail(
@@ -651,9 +663,9 @@ async def on_socket_raw_receive(the_reaction):
 					value = "||" + cart_email + "||\n||" + cart_pass + "||",
 					inline = True
 				)
-				embed.set_footer(
+        embed.set_footer(
 					text = "{} | Cart #{}".format(footer_text, cart_id),
-					icon_url = bot.user.avatar_url
+					icon_url = footer_icon
 				)
 				if cart_thumbnail == "N/A":
 					embed.set_thumbnail(
@@ -749,9 +761,9 @@ async def on_socket_raw_receive(the_reaction):
 					name = "Account",
 					value = cart_account
 				)
-				embed.set_footer(
+        embed.set_footer(
 					text = "{} | Cart #{}".format(footer_text, cart_id),
-					icon_url = bot.user.avatar_url
+					icon_url = footer_icon
 				)
 
 				sql = """DELETE FROM  """ + phantom_table + """ WHERE ID = %s""" % cart_number
@@ -835,9 +847,9 @@ async def on_socket_raw_receive(the_reaction):
 					name = "Size",
 					value = cart_size
 				)
-				embed.set_footer(
+        embed.set_footer(
 					text = "{} | Cart #{}".format(footer_text, cart_id),
-					icon_url = bot.user.avatar_url
+					icon_url = footer_icon
 				)
 				if cart_thumbnail == "N/A":
 					embed.set_thumbnail(
