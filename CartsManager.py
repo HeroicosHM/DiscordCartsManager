@@ -1,3 +1,15 @@
+"""
+Hello and welcome to my code!
+Before I begin, I want to make a couple disclaimers. A lot of waht I do in this program is considered
+very rough around the edges and fairly brute force. For those of you developers looking at this,
+I know that this program is not the cleanest, but I don't have the energy to completely redo it.
+
+If you use this program, please give credit to me somehow.
+Reach out to me on Discord:
+Heroicos_HM#0310
+"""
+
+#These are the modules used by the program.
 import asyncio
 import time
 import os
@@ -6,7 +18,6 @@ import string
 import discord
 from discord.ext.commands import Bot
 from discord.ext import commands
-import sqlite3
 import pymysql
 import re
 import logging
@@ -17,6 +28,7 @@ import json
 
 global data, logs_channels
 
+#Load all of the data from the configuration file.
 with open("./Config.json") as file:
 	config = json.loads(file.read())
 
@@ -39,8 +51,10 @@ with open("./Config.json") as file:
 	online_message = config['online_message']
 	prefix = config['prefix']
 
+	#Get the start time for the uptime command.
 start_time = time.time()
 
+#Establish an initial connection to the database, and make sure the necessary tables exist.
 conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
 cur = conn.cursor(pymysql.cursors.DictCursor)
 
@@ -54,6 +68,7 @@ create_db = """CREATE TABLE IF NOT EXISTS """ + balko_table + """ (ID INT NOT NU
 cur.execute(create_db)
 conn.commit()
 
+#Read information from data files (allows carts to persist through sudden shutdowns and restarts).
 if os.path.isfile(data_file):
 	file = open(data_file).read()
 	if len(file) > 0:
@@ -73,6 +88,8 @@ file.write(json.dumps(data, indent=4, sort_keys=True))
 file.close()
 
 """
+A personal note..I always forget how to do this right so I have it in almost all my programs.
+
 Writing data to json method:
 
 file = open(data_file, 'w+')
@@ -80,10 +97,12 @@ file.write(json.dumps(data, indent=4, sort_keys=True))
 file.close()
 """
 
+#Create the Discord bot object.
 Client = discord.Client()
-
 bot = commands.Bot(command_prefix = "?")
 
+#Triggers when the bot is ready to receive commands.
+#This sends the online message.
 @bot.event
 async def on_ready():
 	print('Logged in as {0} and connected to Discord! (ID: {0.id})'.format(bot.user))
@@ -101,15 +120,19 @@ async def on_ready():
 		for log in logs_channels:
 			await bot.send_message(discord.Object(id=log), embed = embed)
 
+#Triggers whenever a message is sent by anyone in a channel the bot can see.
 @bot.event
 async def on_message(message):
+	#Makes sure the cart is in a server.
 	if message.server:
+		#A little helper bit i put in to make sure things didn't break during the deletion of claimed carts.
 		if len(message.embeds) > 0 and 'title' in message.embeds[0].keys() and (message.embeds[0]['title'] == "**You must include a command.**" or message.embeds[0]['title'] == "**Unrecognized Command**" or message.embeds[0]['title'] == "**Insufficient Permissions**") and message not in data['IsDeleting']:
 			data['IsDeleting'].append(message)
 			await asyncio.sleep(15)
 			await bot.delete_message(message)
 			data['IsDeleting'].remove(message)
 
+		#Command to get the uptime of the bot. Can be used in any channel.
 		if message.content.upper().startswith(prefix + "UPTIME"):
 			now_time = time.time()
 			diff = int(now_time - start_time)
@@ -149,12 +172,18 @@ async def on_message(message):
 			else:
 				await bot.send_message(message.author, embed = embed_time)
 
+		#This whole chunk is what gets the carts from the private channel and sends it in the public channel.
 		if len(message.embeds) > 0:
+			#Establish database connection.
 			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
 			cur = conn.cursor(pymysql.cursors.DictCursor)
+
+			#Make sure the message is in a carts channel.
 			if str(message.channel.id) == carts_original_channel and message.author.id != bot.user.id:
 				diction = message.embeds[0]
+				#Check to make sure it is an acceptable cart type.
 				if "AdiSplash" in str(message.embeds[0]['footer']['text']):
+					#Extract all of the information from the cart.
 					title = diction['title']
 					link = diction['url']
 					for item in diction['fields']:
@@ -182,15 +211,17 @@ async def on_message(message):
 
 					message_id = message.id
 
-					insert_data = """INSERT INTO  """ + adi_table + """ (Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
+					#Insert all of that information into the database for that specific cart type.
+          insert_data = """INSERT INTO  """ + adi_table + """ (Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
 					cur.execute(insert_data)
 					conn.commit()
 
 					sql = "SELECT * FROM `" + adi_table + "` ORDER BY ID DESC LIMIT 1"
 					cur.execute(sql)
 					entry_number = cur.fetchall()
-					entry_number = entry_number[0]['ID'] + 1
+					entry_number = entry_number[0]['ID']
 
+					#Send the reformatted cart into the public cart channel.
 					embed = discord.Embed(
 						title = title,
 						url = "https://www.google.com/search?q=" + pid,
@@ -217,21 +248,17 @@ async def on_message(message):
 						embed.set_thumbnail(
 							url = bot.user.avatar_url
 						)
-					try:
-						embed.set_footer(
-							text = "{} | Cart #{}".format(footer_text, entry_number),
-							icon_url = bot.user.avatar_url
-						)
-					except:
-						embed.set_footer(
-							text = "{} | Cart #{}".format(footer_text, entry_number),
-						)
+					embed.set_footer(
+						text = "{} | Cart #{}".format(footer_text, entry_number),
+						icon_url = footer_icon
+					)
 					r = await bot.send_message(discord.Object(id=carts_formatted_channel), embed = embed)
 					data['AdiSplashMessages'].append(r.id)
 					file = open(data_file, 'w+')
 					file.write(json.dumps(data, indent=4, sort_keys=True))
 					file.close()
 
+				#Repeat, but for Latchkey.
 				elif "LatchKey" in str(message.embeds[0]['footer']['text']):
 					title = diction['title']
 					link = diction['url']
@@ -255,14 +282,14 @@ async def on_message(message):
 
 					message_id = message.id
 
-					insert_data = """INSERT INTO  """ + latch_table + """ (Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
+          insert_data = """INSERT INTO  """ + latch_table + """ (Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
 					cur.execute(insert_data)
 					conn.commit()
 
 					sql = "SELECT * FROM `" + latch_table + "` ORDER BY ID DESC LIMIT 1"
 					cur.execute(sql)
 					entry_number = cur.fetchall()
-					entry_number = entry_number[0]['ID'] + 1
+					entry_number = entry_number[0]['ID']
 
 					embed = discord.Embed(
 						title = title,
@@ -290,21 +317,16 @@ async def on_message(message):
 						embed.set_thumbnail(
 							url = bot.user.avatar_url
 						)
-					try:
-						embed.set_footer(
-							text = "{} | Cart #{}".format(footer_text, entry_number),
-							icon_url = bot.user.avatar_url
-						)
-					except:
-						embed.set_footer(
-							text = "{} | Cart #{}".format(footer_text, entry_number),
-						)
+					embed.set_footer(
+						text = "{} | Cart #{}".format(footer_text, entry_number),
+						icon_url = footer_icon
+					)
 					r = await bot.send_message(discord.Object(id=carts_formatted_channel), embed = embed)
 					data['LatchKeyMessages'].append(r.id)
 					file = open(data_file, 'w+')
 					file.write(json.dumps(data, indent=4, sort_keys=True))
 					file.close()
-
+				#Repeat, but for Phatom.
 				elif "Phantom" in str(message.embeds[0]['footer']['text']):
 					title = diction['title']
 					description = diction['description']
@@ -322,14 +344,14 @@ async def on_message(message):
 
 					message_id = message.id
 
-					insert_data = """INSERT INTO  """ + phantom_table + """ (Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
+          insert_data = """INSERT INTO  """ + phantom_table + """ (Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
 					cur.execute(insert_data)
 					conn.commit()
 
 					sql = "SELECT * FROM `" + phantom_table + "` ORDER BY ID DESC LIMIT 1"
 					cur.execute(sql)
 					entry_number = cur.fetchall()
-					entry_number = entry_number[0]['ID'] + 1
+					entry_number = entry_number[0]['ID']
 
 					embed = discord.Embed(
 						title = title,
@@ -351,7 +373,7 @@ async def on_message(message):
 					)
 					embed.set_footer(
 						text = "{} | Cart #{}".format(footer_text, entry_number),
-						icon_url = bot.user.avatar_url
+						icon_url = footer_icon
 					)
 					r = await bot.send_message(discord.Object(id=carts_formatted_channel), embed = embed)
 					data['PhantomMessages'].append(r.id)
@@ -359,6 +381,7 @@ async def on_message(message):
 					file.write(json.dumps(data, indent=4, sort_keys=True))
 					file.close()
 
+				#Repeat, but for Balkobot.
 				elif "Balkobot" in str(message.embeds[0]['footer']['text']):
 					title = diction['title']
 					url = diction['url']
@@ -383,14 +406,14 @@ async def on_message(message):
 
 					message_id = message.id
 
-					insert_data = """INSERT INTO  """ + balko_table + """ (Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
+          insert_data = """INSERT INTO  """ + balko_table + """ (Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
 					cur.execute(insert_data)
 					conn.commit()
 
 					sql = "SELECT * FROM `" + balko_table + "` ORDER BY ID DESC LIMIT 1"
 					cur.execute(sql)
 					entry_number = cur.fetchall()
-					entry_number = entry_number[0]['ID'] + 1
+					entry_number = entry_number[0]['ID']
 
 					embed = discord.Embed(
 						title = title,
@@ -410,36 +433,33 @@ async def on_message(message):
 						name = "**PID**",
 						value = pid
 					)
-					try:
-						embed.set_footer(
-							text = "{} | Cart #{}".format(footer_text, entry_number),
-							icon_url = bot.user.avatar_url
-						)
-					except:
-						embed.set_footer(
-							text = "{} | Cart #{}".format(footer_text, entry_number),
-						)
+					embed.set_footer(
+						text = "{} | Cart #{}".format(footer_text, entry_number),
+						icon_url = bot.user.avatar_url
+					)
 					if thumbnail != "N/A":
 						embed.set_thumbnail(
 							url = thumbnail
 						)
 					else:
 						embed.set_thumbnail(
-							url = bot.user.avatar_url
+							url = footer_icon
 						)
 					r = await bot.send_message(discord.Object(id=carts_formatted_channel), embed = embed)
 					data['BalkoMessages'].append(r.id)
 					file = open(data_file, 'w+')
 					file.write(json.dumps(data, indent=4, sort_keys=True))
 					file.close()
-
+			#Add the intial reaction from the bot to make it clear what reaction people will add to claim the cart.
 			elif str(message.channel.id) == carts_formatted_channel and message.author.id == bot.user.id:
 				await bot.add_reaction(message, "🛒")
 			else:
 				pass
 
+			#This chunk will handle claiming the carts.
 @bot.event
 async def on_socket_raw_receive(the_reaction):
+	#Gets the event and makes sure it is a reaction that was added.
 	if not isinstance(the_reaction, str):
 		return
 	reaction = json.loads(the_reaction)
@@ -454,16 +474,21 @@ async def on_socket_raw_receive(the_reaction):
 		channel_id = dat.get("channel_id")
 
 		global data
+		#Makes sure the bot isnt allowed to claim the cart.
 		if user_id == bot.user.id:
 			pass
+		#Checks if the message the reaction was added to is a valid cart to react to.
 		elif message_id in data['AdiSplashMessages']:
+			#Immediately mark the cart as claimed, or rather, no longer *not* claimed.
 			data['AdiSplashMessages'].remove(message_id)
+			#Establish DB connection
 			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
 			cur = conn.cursor(pymysql.cursors.DictCursor)
 			file = open(data_file, 'w+')
 			file.write(json.dumps(data, indent=4, sort_keys=True))
 			file.close()
 			channel = channel_id
+			#Get cart information and create a message with the information.
 			if str(channel) == carts_formatted_channel:
 				my_channel = bot.get_channel(channel_id)
 				message = await bot.get_message(my_channel, message_id)
@@ -489,6 +514,7 @@ async def on_socket_raw_receive(the_reaction):
 				cart_hmac = cart_info['HMAC']
 				cart_timestamp = cart_info['Timestamp']
 
+				#Create message with the information extracted from the database.
 				embed = discord.Embed(
 					title = cart_title,
 					url = cart_link,
@@ -535,15 +561,10 @@ async def on_socket_raw_receive(the_reaction):
 					value = cart_timestamp,
 					inline = False
 				)
-				try:
-					embed.set_footer(
-						text = "{} | Cart #{}".format(footer_text, cart_id),
-						icon_url = bot.user.avatar_url
-					)
-				except:
-					embed.set_footer(
-						text = "{} | Cart #{}".format(footer_text, cart_id),
-					)
+        embed.set_footer(
+					text = "{} | Cart #{}".format(footer_text, cart_id),
+					icon_url = footer_icon
+				)
 				if cart_thumbnail == "N/A":
 					embed.set_thumbnail(
 						url = bot.user.avatar_url
@@ -558,6 +579,7 @@ async def on_socket_raw_receive(the_reaction):
 				server = message.server
 				author = server.get_member(user_id)
 
+				#Send the full cart directly to the user.
 				await bot.send_message(author, embed = embed)
 
 				user = await bot.get_user_info(user_id)
@@ -569,6 +591,8 @@ async def on_socket_raw_receive(the_reaction):
 					new_thumbnail = diction['thumbnail']['url']
 				except:
 					new_thumbnail = "N/A"
+
+				#Edit the public cart to show that it was claimed by someone and is no longer available.
 				new_embed = discord.Embed(
 					title = new_title,
 					url = new_link,
@@ -583,6 +607,7 @@ async def on_socket_raw_receive(the_reaction):
 				await bot.edit_message(message, embed = new_embed)
 			else:
 				pass
+		#Repeat for Latchkey.
 		elif message_id in data['LatchKeyMessages']:
 			data['LatchKeyMessages'].remove(message_id)
 			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
@@ -638,15 +663,10 @@ async def on_socket_raw_receive(the_reaction):
 					value = "||" + cart_email + "||\n||" + cart_pass + "||",
 					inline = True
 				)
-				try:
-					embed.set_footer(
-						text = "{} | Cart #{}".format(footer_text, cart_id),
-						icon_url = bot.user.avatar_url
-					)
-				except:
-					embed.set_footer(
-						text = "{} | Cart #{}".format(footer_text, cart_id),
-					)
+        embed.set_footer(
+					text = "{} | Cart #{}".format(footer_text, cart_id),
+					icon_url = footer_icon
+				)
 				if cart_thumbnail == "N/A":
 					embed.set_thumbnail(
 						url = bot.user.avatar_url
@@ -686,6 +706,7 @@ async def on_socket_raw_receive(the_reaction):
 				await bot.edit_message(message, embed = new_embed)
 			else:
 				pass
+		#Repeat for Phantom.
 		elif message_id in data['PhantomMessages']:
 			data['PhantomMessages'].remove(message_id)
 			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
@@ -740,15 +761,10 @@ async def on_socket_raw_receive(the_reaction):
 					name = "Account",
 					value = cart_account
 				)
-				try:
-					embed.set_footer(
-						text = "{} | Cart #{}".format(footer_text, cart_id),
-						icon_url = bot.user.avatar_url
-					)
-				except:
-					embed.set_footer(
-						text = "{} | Cart #{}".format(footer_text, cart_id),
-					)
+        embed.set_footer(
+					text = "{} | Cart #{}".format(footer_text, cart_id),
+					icon_url = footer_icon
+				)
 
 				sql = """DELETE FROM  """ + phantom_table + """ WHERE ID = %s""" % cart_number
 				cur.execute(sql)
@@ -779,6 +795,7 @@ async def on_socket_raw_receive(the_reaction):
 				await bot.edit_message(message, embed = new_embed)
 			else:
 				pass
+		#Repeat for Balkobot.
 		elif message_id in data['BalkoMessages']:
 			data['BalkoMessages'].remove(message_id)
 			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
@@ -830,15 +847,10 @@ async def on_socket_raw_receive(the_reaction):
 					name = "Size",
 					value = cart_size
 				)
-				try:
-					embed.set_footer(
-						text = "{} | Cart #{}".format(footer_text, cart_id),
-						icon_url = bot.user.avatar_url
-					)
-				except:
-					embed.set_footer(
-						text = "{} | Cart #{}".format(footer_text, cart_id),
-					)
+        embed.set_footer(
+					text = "{} | Cart #{}".format(footer_text, cart_id),
+					icon_url = footer_icon
+				)
 				if cart_thumbnail == "N/A":
 					embed.set_thumbnail(
 						url = bot.user.avatar_url
@@ -881,4 +893,5 @@ async def on_socket_raw_receive(the_reaction):
 		else:
 			pass
 
+#Actuallly start the dang bot.
 bot.run(TOKEN)
