@@ -608,7 +608,7 @@ async def on_socket_raw_receive(the_reaction):
 				user = await bot.get_user_info(user_id)
 				new_title = "Cart Claimed!"
 				new_link = diction['url']
-				new_footer_text = "%s | Claimed by %s" % (bot.user.name, user.name)
+				new_footer_text = "%s | Claimed by %s" % (footer_text, user.name)
 				new_footer_icon_url = diction['footer']['icon_url']
 				try:
 					new_thumbnail = diction['thumbnail']['url']
