@@ -58,13 +58,13 @@ start_time = time.time()
 conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
 cur = conn.cursor(pymysql.cursors.DictCursor)
 
-create_db = """CREATE TABLE IF NOT EXISTS """ + adi_table + """ (ID INT NOT NULL IDENTITY PRIMARY KEY, Title text, Link text, Email text, Password text, Size text, Desktop text, Mobile text, PID text, Thumbnail text, MessageID text, Timestamp text, Proxy text, HMAC text);"""
+create_db = """CREATE TABLE IF NOT EXISTS """ + adi_table + """ (ID MEDIUMINT NOT NULL AUTO_INCREMENT, Title text, Link text, Email text, Password text, Size text, Desktop text, Mobile text, PID text, Thumbnail text, MessageID text, Timestamp text, Proxy text, HMAC text, PRIMARY KEY (ID));"""
 cur.execute(create_db)
-create_db = """CREATE TABLE IF NOT EXISTS """ + latch_table + """ (ID INT NOT NULL IDENTITY PRIMARY KEY, Title text, Link text, Email text, Password text, Size text, Region text, PID text, Thumbnail text, MessageID text);"""
+create_db = """CREATE TABLE IF NOT EXISTS """ + latch_table + """ (ID MEDIUMINT NOT NULL AUTO_INCREMENT, Title text, Link text, Email text, Password text, Size text, Region text, PID text, Thumbnail text, MessageID text, PRIMARY KEY (ID));"""
 cur.execute(create_db)
-create_db = """CREATE TABLE IF NOT EXISTS """ + phantom_table + """ (ID INT NOT NULL IDENTITY PRIMARY KEY, Title text, Description text, Name text, Size text, Profile text, Site text, Account text, MessageID text);"""
+create_db = """CREATE TABLE IF NOT EXISTS """ + phantom_table + """ (ID MEDIUMINT NOT NULL AUTO_INCREMENT, Title text, Description text, Name text, Size text, Profile text, Site text, Account text, MessageID text, PRIMARY KEY (ID));"""
 cur.execute(create_db)
-create_db = """CREATE TABLE IF NOT EXISTS """ + balko_table + """ (ID INT NOT NULL IDENTITY PRIMARY KEY, Title text, Link text, Email text, Password text, Size text, Region text, PID text, Thumbnail text, MessageID text);"""
+create_db = """CREATE TABLE IF NOT EXISTS """ + balko_table + """ (ID MEDIUMINT NOT NULL AUTO_INCREMENT, Title text, Link text, Email text, Password text, Size text, Region text, PID text, Thumbnail text, MessageID text, PRIMARY KEY (ID));"""
 cur.execute(create_db)
 conn.commit()
 
