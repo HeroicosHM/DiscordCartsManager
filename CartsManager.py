@@ -177,7 +177,7 @@ async def on_message(message):
 			#Establish database connection.
 			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
 			cur = conn.cursor(pymysql.cursors.DictCursor)
-
+			
 			#Make sure the message is in a carts channel.
 			if str(message.channel.id) == carts_original_channel and message.author.id != bot.user.id:
 				diction = message.embeds[0]
@@ -257,7 +257,7 @@ async def on_message(message):
 					file = open(data_file, 'w+')
 					file.write(json.dumps(data, indent=4, sort_keys=True))
 					file.close()
-
+				
 				#Repeat, but for Latchkey.
 				elif "LatchKey" in str(message.embeds[0]['footer']['text']):
 					title = diction['title']
@@ -380,7 +380,7 @@ async def on_message(message):
 					file = open(data_file, 'w+')
 					file.write(json.dumps(data, indent=4, sort_keys=True))
 					file.close()
-
+				
 				#Repeat, but for Balkobot.
 				elif "Balkobot" in str(message.embeds[0]['footer']['text']):
 					title = diction['title']
@@ -578,8 +578,8 @@ async def on_socket_raw_receive(the_reaction):
 				conn.commit()
 				server = message.server
 				author = server.get_member(user_id)
-
-				#Send the full cart directly to the user.
+	
+				#Send the full cart directly to the user.			
 				await bot.send_message(author, embed = embed)
 
 				user = await bot.get_user_info(user_id)
@@ -591,7 +591,7 @@ async def on_socket_raw_receive(the_reaction):
 					new_thumbnail = diction['thumbnail']['url']
 				except:
 					new_thumbnail = "N/A"
-
+				
 				#Edit the public cart to show that it was claimed by someone and is no longer available.
 				new_embed = discord.Embed(
 					title = new_title,

@@ -14,7 +14,7 @@
   "database_ip":"YOUR IP",
   "database_username":"YOUR USERNAME",
   "database_password":"YOUR PASSWORD",
-  "database_name":"DATABSE NAME",
+  "database_name":"DATABASE NAME",
   "footer_icon_url":"URL HERE",
   "online_message":"Carts Manager Online!"
 }
