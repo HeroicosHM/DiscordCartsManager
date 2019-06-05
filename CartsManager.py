@@ -42,6 +42,7 @@ with open("./Config.json") as file:
 	latch_table = config['latch_table']
 	phantom_table = config['phantom_table']
 	balko_table = config['balko_table']
+	sole_table = config['sole_table']
 	TOKEN = config['TOKEN']
 	db_ip = config['database_ip']
 	db_user = config['database_username']
@@ -66,6 +67,8 @@ create_db = """CREATE TABLE IF NOT EXISTS """ + phantom_table + """ (ID MEDIUMIN
 cur.execute(create_db)
 create_db = """CREATE TABLE IF NOT EXISTS """ + balko_table + """ (ID MEDIUMINT, Title text, Link text, Email text, Password text, Size text, Region text, PID text, Thumbnail text, MessageID text);"""
 cur.execute(create_db)
+create_db = """CREATE TABLE IF NOT EXISTS """ + sole_table + """ (ID MEDIUMINT, Title text, Link text, Region text, Size text, Email text, Password text, Proxy text, Login text, Thumbnail text, MessageID text);"""
+cur.execute(create_db)
 conn.commit()
 
 #Read information from data files (allows carts to persist through sudden shutdowns and restarts).
@@ -76,12 +79,12 @@ if os.path.isfile(data_file):
 		print(data)
 	else:
 		data = {}
-		data['IsDeleting'], data['AdiSplashMessages'], data['LatchKeyMessages'], data['PhantomMessages'], data['BalkoMessages'] = [], [], [], [], []
+		data['IsDeleting'], data['AdiSplashMessages'], data['LatchKeyMessages'], data['PhantomMessages'], data['BalkoMessages'], data['SoleAIOMessages'] = [], [], [], [], [], []
 else:
 	file = open(data_file, 'w+')
 	file.close()
 	data = {}
-	data['IsDeleting'], data['AdiSplashMessages'], data['LatchKeyMessages'], data['PhantomMessages'], data['BalkoMessages'] = [], [], [], [], []
+	data['IsDeleting'], data['AdiSplashMessages'], data['LatchKeyMessages'], data['PhantomMessages'], data['BalkoMessages'], data['SoleAIOMessages'] = [], [], [], [], [], []
 
 file = open(data_file, 'w+')
 file.write(json.dumps(data, indent=4, sort_keys=True))
@@ -214,7 +217,6 @@ async def on_message(message):
 					sql = "SELECT * FROM `" + adi_table + "` ORDER BY ID DESC LIMIT 1"
 					cur.execute(sql)
 					entry_number = cur.fetchall()
-					print(str(entry_number))
 					if len(entry_number) == 0:
 						entry_number = str(1)
 					else:
@@ -245,9 +247,7 @@ async def on_message(message):
 						value = timestamp
 					)
 					if thumbnail != "N/A":
-						embed.set_thumbnail(
-							url = thumbnail
-						)
+						pass
 					else:
 						embed.set_thumbnail(
 							url = bot.user.avatar_url
@@ -290,7 +290,6 @@ async def on_message(message):
 					sql = "SELECT * FROM `" + latch_table + "` ORDER BY ID DESC LIMIT 1"
 					cur.execute(sql)
 					entry_number = cur.fetchall()
-					print(str(entry_number))
 					if len(entry_number) == 0:
 						entry_number = str(1)
 					else:
@@ -320,9 +319,7 @@ async def on_message(message):
 						value = expiry
 					)
 					if thumbnail != "N/A":
-						embed.set_thumbnail(
-							url = thumbnail
-						)
+						pass
 					else:
 						embed.set_thumbnail(
 							url = bot.user.avatar_url
@@ -340,7 +337,6 @@ async def on_message(message):
 				#Repeat, but for Phatom.
 				elif "Phantom" in str(message.embeds[0]['footer']['text']):
 					author = diction['author']['name']
-					print(str(message.embeds[0]))
 					title = diction['title']
 					link = diction['url']
 					for item in diction['fields']:
@@ -360,7 +356,6 @@ async def on_message(message):
 					sql = "SELECT * FROM `" + phantom_table + "` ORDER BY ID DESC LIMIT 1"
 					cur.execute(sql)
 					entry_number = cur.fetchall()
-					print(str(entry_number))
 					if len(entry_number) == 0:
 						entry_number = str(1)
 					else:
@@ -405,7 +400,7 @@ async def on_message(message):
 				#Repeat, but for Balkobot.
 				elif "Balkobot" in str(message.embeds[0]['footer']['text']):
 					title = diction['title']
-					url = diction['url']
+					link = diction['url']
 					for item in diction['fields']:
 						if 'Email' in item['name']:
 							email = item['value']
@@ -430,7 +425,6 @@ async def on_message(message):
 					sql = "SELECT * FROM `" + balko_table + "` ORDER BY ID DESC LIMIT 1"
 					cur.execute(sql)
 					entry_number = cur.fetchall()
-					print(str(entry_number))
 					if len(entry_number) == 0:
 						entry_number = str(1)
 					else:
@@ -443,7 +437,7 @@ async def on_message(message):
 
 					embed = discord.Embed(
 						title = title,
-						url = url,
+						url = link,
 						color = embed_color,
 						timestamp = datetime.datetime.now(datetime.timezone.utc)
 					)
@@ -463,17 +457,82 @@ async def on_message(message):
 						text = "{} | Cart #{}".format(footer_text, entry_number),
 						icon_url = bot.user.avatar_url
 					)
-					if thumbnail != "N/A":
-						embed.set_thumbnail(
-							url = thumbnail
-						)
+					if thumbnail == "N/A":
+						pass
 					else:
 						embed.set_thumbnail(
-							url = footer_icon
+							url = thumbnail
 						)
 					r = await bot.send_message(discord.Object(id=carts_formatted_channel), embed = embed)
 					await bot.add_reaction(r, "🛒")
 					data['BalkoMessages'].append(r.id)
+					file = open(data_file, 'w+')
+					file.write(json.dumps(data, indent=4, sort_keys=True))
+					file.close()
+				#Repeat, but for Sole AIO.
+				elif "Sole AIO" in str(message.embeds[0]['footer']['text']):
+					title = diction['title']
+					link = diction['url']
+					for item in diction['fields']:
+						if 'Email' in item['name']:
+							email = item['value']
+						elif 'Password' in item['name']:
+							password = item['value']
+						elif 'Size' in item['name']:
+							size = item['value']
+						elif 'Login' in item['name']:
+							login = item['value']
+						elif 'Region' in item['name']:
+							region = item['value']
+						elif 'Proxy' in item['name']:
+							proxy = item['value']
+
+					try:
+						thumbnail = diction['thumbnail']['url']
+					except:
+						thumbnail = "N/A"
+
+					message_id = message.id
+
+					sql = "SELECT * FROM `" + sole_table + "` ORDER BY ID DESC LIMIT 1"
+					cur.execute(sql)
+					entry_number = cur.fetchall()
+					if len(entry_number) == 0:
+						entry_number = str(1)
+					else:
+						entry_number = str(entry_number[0]['ID'] + 1)
+
+					#Insert all of that information into the database for that specific cart type.
+					insert_data = """INSERT INTO  """ + sole_table + """ (ID, Title, Link, Region, Size, Email, Password, Proxy, Login, Thumbnail, MessageID) VALUES ('""" + entry_number + """','""" + title + """', '""" + link + """', '""" + region + """', '""" + size + """', '""" + email + """', '""" + password + """', '""" + proxy + """', '""" + login + """','""" + thumbnail + """','""" + message_id + """');"""
+					cur.execute(insert_data)
+					conn.commit()
+
+					embed = discord.Embed(
+						title = title,
+						color = embed_color,
+						timestamp = datetime.datetime.now(datetime.timezone.utc)
+					)
+					embed.add_field(
+						name = "**Region**",
+						value = region
+					)
+					embed.add_field(
+						name = "**Size**",
+						value = size
+					)
+					embed.set_footer(
+						text = "{} | Cart #{}".format(footer_text, entry_number),
+						icon_url = footer_icon
+					)
+					if thumbnail == "N/A":
+						pass
+					else:
+						embed.set_thumbnail(
+							url = thumbnail
+						)
+					r = await bot.send_message(discord.Object(id=carts_formatted_channel), embed = embed)
+					await bot.add_reaction(r, "🛒")
+					data['SoleAIOMessages'].append(r.id)
 					file = open(data_file, 'w+')
 					file.write(json.dumps(data, indent=4, sort_keys=True))
 					file.close()
@@ -520,11 +579,9 @@ async def on_socket_raw_receive(the_reaction):
 				diction = message.embeds[0]
 				cart_text = diction['footer']['text'].split("|")[-1]
 				cart_number = int(re.search(r'\d+', cart_text).group(0))
-				print("Cart Number " + str(cart_number))
 				sql = """SELECT * FROM  """ + adi_table + """ WHERE ID = %s""" % cart_number
 				cur.execute(sql)
 				cart_info = cur.fetchall()
-				print(cart_info)
 				cart_info = cart_info[0]
 				cart_id = cart_info['ID']
 				cart_title = cart_info['Title']
@@ -593,9 +650,7 @@ async def on_socket_raw_receive(the_reaction):
 					icon_url = footer_icon
 				)
 				if cart_thumbnail == "N/A":
-					embed.set_thumbnail(
-						url = bot.user.avatar_url
-					)
+					pass
 				else:
 					embed.set_thumbnail(
 						url = cart_thumbnail
@@ -695,9 +750,7 @@ async def on_socket_raw_receive(the_reaction):
 					icon_url = footer_icon
 				)
 				if cart_thumbnail == "N/A":
-					embed.set_thumbnail(
-						url = bot.user.avatar_url
-					)
+					pass
 				else:
 					embed.set_thumbnail(
 						url = cart_thumbnail
@@ -883,9 +936,7 @@ async def on_socket_raw_receive(the_reaction):
 					icon_url = footer_icon
 				)
 				if cart_thumbnail == "N/A":
-					embed.set_thumbnail(
-						url = bot.user.avatar_url
-					)
+					pass
 				else:
 					embed.set_thumbnail(
 						url = cart_thumbnail
@@ -910,6 +961,112 @@ async def on_socket_raw_receive(the_reaction):
 				new_embed = discord.Embed(
 					title = new_title,
 					url = new_link,
+					description = "*This cart was claimed by `%s` and is no longer available.*" % user.name,
+					color = embed_color,
+					timestamp = datetime.datetime.now(datetime.timezone.utc)
+				)
+				new_embed.set_footer(
+					text = new_footer_text,
+					icon_url = new_footer_icon_url
+				)
+				await bot.edit_message(message, embed = new_embed)
+			else:
+				pass
+		#Repeat for Sole AIO.
+		elif message_id in data['SoleAIOMessages']:
+			data['SoleAIOMessages'].remove(message_id)
+			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
+			cur = conn.cursor(pymysql.cursors.DictCursor)
+			file = open(data_file, 'w+')
+			file.write(json.dumps(data, indent=4, sort_keys=True))
+			file.close()
+			channel = channel_id
+			if str(channel) == carts_formatted_channel:
+				my_channel = bot.get_channel(channel_id)
+				message = await bot.get_message(my_channel, message_id)
+				await bot.clear_reactions(message)
+				diction = message.embeds[0]
+				cart_text = diction['footer']['text']
+				cart_number = int(re.search(r'\d+', cart_text).group(0))
+				sql = """SELECT * FROM  """ + sole_table + """ WHERE ID = %s""" % cart_number
+				cur.execute(sql)
+				cart_info = cur.fetchall()[0]
+				cart_id = cart_info['ID']
+				cart_title = cart_info['Title']
+				cart_link = cart_info['Link']
+				cart_email = cart_info['Email']
+				cart_pass = cart_info['Password']
+				cart_size = cart_info['Size']
+				cart_region = cart_info['Region']
+				cart_proxy = cart_info['Proxy']
+				cart_login = cart_info['Login']
+				cart_thumbnail = cart_info['Thumbnail']
+				cart_discord_link = cart_info['MessageID']
+
+				embed = discord.Embed(
+					title = cart_title,
+					url = cart_link,
+					color = embed_color,
+					timestamp = datetime.datetime.now(datetime.timezone.utc)
+				)
+				embed.add_field(
+					name = "**Region**",
+					value = cart_region,
+					inline = True
+				)
+				embed.add_field(
+					name = "**Size**",
+					value = cart_size,
+					inline = True
+				)
+				embed.add_field(
+					name = "**Email**",
+					value = cart_email,
+					inline = False
+				)
+				embed.add_field(
+					name = "**Password**",
+					value = cart_pass,
+					inline = False
+				)
+				embed.add_field(
+					name = "**Proxy**",
+					value = cart_proxy,
+					inline = False
+				)
+				embed.add_field(
+					name = "**Mobile Login**",
+					value = cart_login,
+					inline = False
+				)
+				embed.set_footer(
+					text = "{} | Cart #{}".format(footer_text, cart_id),
+					icon_url = footer_icon
+				)
+				if cart_thumbnail == "N/A":
+					pass
+				else:
+					embed.set_thumbnail(
+						url = cart_thumbnail
+					)
+				sql = """DELETE FROM  """ + sole_table + """ WHERE ID = %s""" % cart_number
+				cur.execute(sql)
+				conn.commit()
+				server = message.server
+				author = server.get_member(user_id)
+
+				await bot.send_message(author, embed = embed)
+
+				user = await bot.get_user_info(user_id)
+				new_title = "Cart Claimed!"
+				new_footer_text = "%s | Claimed by %s" % (footer_text, user.name)
+				new_footer_icon_url = diction['footer']['icon_url']
+				try:
+					new_thumbnail = diction['thumbnail']['url']
+				except:
+					new_thumbnail = "N/A"
+				new_embed = discord.Embed(
+					title = new_title,
 					description = "*This cart was claimed by `%s` and is no longer available.*" % user.name,
 					color = embed_color,
 					timestamp = datetime.datetime.now(datetime.timezone.utc)
