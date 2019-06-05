@@ -297,7 +297,7 @@ async def on_message(message):
 						entry_number = str(entry_number[0]['ID'] + 1)
 
 					#Insert all of that information into the database for that specific cart type.
-					insert_data = """INSERT INTO  """ + latch_table + """ (ID, Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + entry_number + """','""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
+					insert_data = """INSERT INTO  """ + latch_table + """ (ID, Title, Link, Email, Password, Size, Region, PID, Thumbnail, MessageID) VALUES ('""" + entry_number + """','""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + region + """', '""" + pid + """', '""" + thumbnail + """', '""" + message_id + """');"""
 					cur.execute(insert_data)
 					conn.commit()
 
@@ -437,7 +437,7 @@ async def on_message(message):
 						entry_number = str(entry_number[0]['ID'] + 1)
 
 					#Insert all of that information into the database for that specific cart type.
-					insert_data = """INSERT INTO  """ + balko_table + """ (ID, Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + entry_number + """','""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
+					insert_data = """INSERT INTO  """ + balko_table + """ (ID, Title, Link, Email, Password, Size, Region, PID, Thumbnail, MessageID) VALUES ('""" + entry_number + """','""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + region + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """');"""
 					cur.execute(insert_data)
 					conn.commit()
 
