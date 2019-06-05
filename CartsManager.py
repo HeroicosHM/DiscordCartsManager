@@ -62,7 +62,7 @@ create_db = """CREATE TABLE IF NOT EXISTS """ + adi_table + """ (ID MEDIUMINT, T
 cur.execute(create_db)
 create_db = """CREATE TABLE IF NOT EXISTS """ + latch_table + """ (ID MEDIUMINT, Title text, Link text, Email text, Password text, Size text, Region text, PID text, Thumbnail text, MessageID text);"""
 cur.execute(create_db)
-create_db = """CREATE TABLE IF NOT EXISTS """ + phantom_table + """ (ID MEDIUMINT, Title text, Description text, Name text, Size text, Profile text, Site text, Account text, MessageID text);"""
+create_db = """CREATE TABLE IF NOT EXISTS """ + phantom_table + """ (ID MEDIUMINT, Author text, Title text, Name text, Size text, Profile text, Site text, Account text, Link text, MessageID text);"""
 cur.execute(create_db)
 create_db = """CREATE TABLE IF NOT EXISTS """ + balko_table + """ (ID MEDIUMINT, Title text, Link text, Email text, Password text, Size text, Region text, PID text, Thumbnail text, MessageID text);"""
 cur.execute(create_db)
@@ -339,8 +339,10 @@ async def on_message(message):
 					file.close()
 				#Repeat, but for Phatom.
 				elif "Phantom" in str(message.embeds[0]['footer']['text']):
+					author = diction['author']['name']
+					print(str(message.embeds[0]))
 					title = diction['title']
-					description = diction['description']
+					link = diction['url']
 					for item in diction['fields']:
 						if 'Item' in item['name']:
 							name = item['value']
@@ -365,15 +367,17 @@ async def on_message(message):
 						entry_number = str(entry_number[0]['ID'] + 1)
 
 					#Insert all of that information into the database for that specific cart type.
-					insert_data = """INSERT INTO  """ + phantom_table + """ (ID, Title, Link, Email, Password, Size, Desktop, Mobile, PID, Thumbnail, MessageID, Timestamp, Proxy, HMAC) VALUES ('""" + entry_number + """','""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + size + """', '""" + desktop_link + """', '""" + mobile_link + """', '""" + pid + """', '""" + thumbnail + """','""" + message_id + """', '""" + timestamp + """', '""" + proxy + """', '""" + hmac + """');"""
+					insert_data = """INSERT INTO  """ + phantom_table + """ (ID, Author, Title, Name, Size, Profile, Site, Account, Link, MessageID) VALUES ('""" + entry_number + """', '""" + author + """', '""" + title + """', '""" + name + """', '""" + size + """', '""" + profile + """', '""" + site + """', '""" + account + """', '""" + link + """', '""" + message_id + """');"""
 					cur.execute(insert_data)
 					conn.commit()
 
 					embed = discord.Embed(
 						title = title,
-						description = description,
 						color = embed_color,
 						timestamp = datetime.datetime.now(datetime.timezone.utc)
+					)
+					embed.set_author(
+						name = author
 					)
 					embed.add_field(
 						name = "**Item**",
@@ -750,7 +754,8 @@ async def on_socket_raw_receive(the_reaction):
 				cart_info = cur.fetchall()[0]
 				cart_id = cart_info['ID']
 				cart_title = cart_info['Title']
-				cart_description = cart_info['Description']
+				cart_author = cart_info['Author']
+				cart_link = cart_info['Link']
 				cart_name = cart_info['Name']
 				cart_size = cart_info['Size']
 				cart_profile = cart_info['Profile']
@@ -760,9 +765,12 @@ async def on_socket_raw_receive(the_reaction):
 
 				embed = discord.Embed(
 					title = cart_title,
-					description = cart_description,
 					color = embed_color,
+					url = cart_link,
 					timestamp = datetime.datetime.now(datetime.timezone.utc)
+				)
+				embed.set_author(
+					name = cart_author
 				)
 				embed.add_field(
 					name = "Item",
