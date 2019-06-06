@@ -25,6 +25,7 @@ import traceback
 import sys
 import datetime
 import json
+from urllib.parse import urlparse
 
 global data, logs_channels
 
@@ -241,6 +242,10 @@ async def on_message(message):
 					embed.add_field(
 						name = "**SIZE**",
 						value = size
+					)
+					embed.add_field(
+						name = "**DOMAIN**",
+						value = urlparse(link).netloc
 					)
 					embed.add_field(
 						name = "**TIMESTAMP**",
@@ -520,6 +525,10 @@ async def on_message(message):
 						name = "**Size**",
 						value = size
 					)
+					embed.add_field(
+						name = "**Domain**",
+						value = urlparse(link).netloc
+					)
 					embed.set_footer(
 						text = "{} | Cart #{}".format(footer_text, entry_number),
 						icon_url = footer_icon
@@ -638,6 +647,11 @@ async def on_socket_raw_receive(the_reaction):
 				embed.add_field(
 					name = "**PROXY**",
 					value = cart_proxy,
+					inline = False
+				)
+				embed.add_field(
+					name = "**DOMAIN**",
+					value = urlparse(cart_link).netloc,
 					inline = False
 				)
 				embed.add_field(
@@ -1037,6 +1051,11 @@ async def on_socket_raw_receive(the_reaction):
 				embed.add_field(
 					name = "**Mobile Login**",
 					value = cart_login,
+					inline = False
+				)
+				embed.add_field(
+					name = "**Domain**",
+					value = urlparse(cart_link).netloc,
 					inline = False
 				)
 				embed.set_footer(
