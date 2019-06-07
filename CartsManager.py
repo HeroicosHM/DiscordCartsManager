@@ -44,6 +44,7 @@ with open("./Config.json") as file:
 	phantom_table = config['phantom_table']
 	balko_table = config['balko_table']
 	sole_table = config['sole_table']
+	hastey_table = config['hastey_table']
 	TOKEN = config['TOKEN']
 	db_ip = config['database_ip']
 	db_user = config['database_username']
