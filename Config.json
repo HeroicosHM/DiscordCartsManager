@@ -11,6 +11,7 @@
   "phantom_table":"PhantomCarts",
   "balko_table":"BalkoCarts",
   "sole_table":"SoleAIOCarts",
+  "hastey_table":"HasteyCarts",
   "TOKEN":"YOUR_TOKEN_HERE",
   "database_ip":"YOUR IP",
   "database_username":"YOUR USERNAME",

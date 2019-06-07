@@ -70,6 +70,7 @@ create_db = """CREATE TABLE IF NOT EXISTS """ + balko_table + """ (ID MEDIUMINT,
 cur.execute(create_db)
 create_db = """CREATE TABLE IF NOT EXISTS """ + sole_table + """ (ID MEDIUMINT, Title text, Link text, Region text, Size text, Email text, Password text, Proxy text, Login text, Thumbnail text, MessageID text);"""
 cur.execute(create_db)
+create_db = """CREATE TABLE IF NOT EXISTS """ + hastey_table + """ (ID MEDIUMINT, Title text, Link text, Item text, Size text, Email text, Password text, Thumbnail text, MessageID text);"""
 conn.commit()
 
 #Read information from data files (allows carts to persist through sudden shutdowns and restarts).
@@ -80,12 +81,12 @@ if os.path.isfile(data_file):
 		print(data)
 	else:
 		data = {}
-		data['IsDeleting'], data['AdiSplashMessages'], data['LatchKeyMessages'], data['PhantomMessages'], data['BalkoMessages'], data['SoleAIOMessages'] = [], [], [], [], [], []
+		data['IsDeleting'], data['AdiSplashMessages'], data['LatchKeyMessages'], data['PhantomMessages'], data['BalkoMessages'], data['SoleAIOMessages'], data['HasteyMessages'] = [], [], [], [], [], [], []
 else:
 	file = open(data_file, 'w+')
 	file.close()
 	data = {}
-	data['IsDeleting'], data['AdiSplashMessages'], data['LatchKeyMessages'], data['PhantomMessages'], data['BalkoMessages'], data['SoleAIOMessages'] = [], [], [], [], [], []
+	data['IsDeleting'], data['AdiSplashMessages'], data['LatchKeyMessages'], data['PhantomMessages'], data['BalkoMessages'], data['SoleAIOMessages'], data['HasteyMessages'] = [], [], [], [], [], [], []
 
 file = open(data_file, 'w+')
 file.write(json.dumps(data, indent=4, sort_keys=True))
@@ -542,6 +543,73 @@ async def on_message(message):
 					r = await bot.send_message(discord.Object(id=carts_formatted_channel), embed = embed)
 					await bot.add_reaction(r, "🛒")
 					data['SoleAIOMessages'].append(r.id)
+					file = open(data_file, 'w+')
+					file.write(json.dumps(data, indent=4, sort_keys=True))
+					file.close()
+				#Repeat, but for Hastey.
+			elif "HasteyIO" in str(message.embeds[0]['footer']['text']):
+					title = diction['title']
+					link = diction['url']
+					for item in diction['fields']:
+						if 'Item' in item['name']:
+							item_name = item['value']
+						elif 'Size' in item['name']:
+							size = item['value']
+						elif 'Email' in item['name']:
+							email = item['value']
+						elif 'Password' in item['name']:
+							password = item['value']
+
+					try:
+						thumbnail = diction['thumbnail']['url']
+					except:
+						thumbnail = "N/A"
+
+					message_id = message.id
+
+					sql = "SELECT * FROM `" + hastey_table + "` ORDER BY ID DESC LIMIT 1"
+					cur.execute(sql)
+					entry_number = cur.fetchall()
+					if len(entry_number) == 0:
+						entry_number = str(1)
+					else:
+						entry_number = str(entry_number[0]['ID'] + 1)
+
+					#Insert all of that information into the database for that specific cart type.
+					insert_data = """INSERT INTO  """ + hastey_table + """ (ID, Title, Link, Item, Size, Email, Password, Thumbnail, MessageID) VALUES ('""" + entry_number + """','""" + title + """', '""" + link + """', '""" + item_name + """', '""" + size + """', '""" + email + """', '""" + password + """','""" + thumbnail + """','""" + message_id + """');"""
+					cur.execute(insert_data)
+					conn.commit()
+
+					embed = discord.Embed(
+						title = title,
+						color = embed_color,
+						timestamp = datetime.datetime.now(datetime.timezone.utc)
+					)
+					embed.add_field(
+						name = "**Item**",
+						value = item_name
+					)
+					embed.add_field(
+						name = "**Size**",
+						value = size
+					)
+					embed.add_field(
+						name = "**Domain**",
+						value = urlparse(link).netloc
+					)
+					embed.set_footer(
+						text = "{} | Cart #{}".format(footer_text, entry_number),
+						icon_url = footer_icon
+					)
+					if thumbnail == "N/A":
+						pass
+					else:
+						embed.set_thumbnail(
+							url = thumbnail
+						)
+					r = await bot.send_message(discord.Object(id=carts_formatted_channel), embed = embed)
+					await bot.add_reaction(r, "🛒")
+					data['HasteyMessages'].append(r.id)
 					file = open(data_file, 'w+')
 					file.write(json.dumps(data, indent=4, sort_keys=True))
 					file.close()
@@ -1097,6 +1165,106 @@ async def on_socket_raw_receive(the_reaction):
 				await bot.edit_message(message, embed = new_embed)
 			else:
 				pass
+		#Repeat for Hastey.
+		elif message_id in data['HasteyMessages']:
+			data['HasteyMessages'].remove(message_id)
+			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
+			cur = conn.cursor(pymysql.cursors.DictCursor)
+			file = open(data_file, 'w+')
+			file.write(json.dumps(data, indent=4, sort_keys=True))
+			file.close()
+			channel = channel_id
+			if str(channel) == carts_formatted_channel:
+				my_channel = bot.get_channel(channel_id)
+				message = await bot.get_message(my_channel, message_id)
+				await bot.clear_reactions(message)
+				diction = message.embeds[0]
+				cart_text = diction['footer']['text']
+				cart_number = int(re.search(r'\d+', cart_text).group(0))
+				sql = """SELECT * FROM  """ + hastey_table + """ WHERE ID = %s""" % cart_number
+				cur.execute(sql)
+				cart_info = cur.fetchall()[0]
+				cart_id = cart_info['ID']
+				cart_title = cart_info['Title']
+				cart_link = cart_info['Link']
+				cart_item = cart_info['Item']
+				cart_size = cart_info['Size']
+				cart_email = cart_info['Email']
+				cart_pass = cart_info['Password']
+				cart_thumbnail = cart_info['Thumbnail']
+				cart_discord_link = cart_info['MessageID']
+
+				embed = discord.Embed(
+					title = cart_title,
+					url = cart_link,
+					color = embed_color,
+					timestamp = datetime.datetime.now(datetime.timezone.utc)
+				)
+				embed.add_field(
+					name = "**Item**",
+					value = cart_item,
+					inline = True
+				)
+				embed.add_field(
+					name = "**Size**",
+					value = cart_size,
+					inline = True
+				)
+				embed.add_field(
+					name = "**Email**",
+					value = cart_email,
+					inline = False
+				)
+				embed.add_field(
+					name = "**Password**",
+					value = cart_pass,
+					inline = False
+				)
+				embed.add_field(
+					name = "**Domain**",
+					value = urlparse(cart_link).netloc,
+					inline = False
+				)
+				embed.set_footer(
+					text = "{} | Cart #{}".format(footer_text, cart_id),
+					icon_url = footer_icon
+				)
+				if cart_thumbnail == "N/A":
+					pass
+				else:
+					embed.set_thumbnail(
+						url = cart_thumbnail
+					)
+				sql = """DELETE FROM  """ + hastey_table + """ WHERE ID = %s""" % cart_number
+				cur.execute(sql)
+				conn.commit()
+				server = message.server
+				author = server.get_member(user_id)
+
+				await bot.send_message(author, embed = embed)
+
+				user = await bot.get_user_info(user_id)
+				new_title = "Cart Claimed!"
+				new_footer_text = "%s | Claimed by %s" % (footer_text, user.name)
+				new_footer_icon_url = diction['footer']['icon_url']
+				try:
+					new_thumbnail = diction['thumbnail']['url']
+				except:
+					new_thumbnail = "N/A"
+				new_embed = discord.Embed(
+					title = new_title,
+					description = "*This cart was claimed by `%s` and is no longer available.*" % user.name,
+					color = embed_color,
+					timestamp = datetime.datetime.now(datetime.timezone.utc)
+				)
+				new_embed.set_footer(
+					text = new_footer_text,
+					icon_url = new_footer_icon_url
+				)
+				await bot.edit_message(message, embed = new_embed)
+			else:
+				pass
+
 		else:
 			pass
 
