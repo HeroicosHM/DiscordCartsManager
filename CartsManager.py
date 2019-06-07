@@ -72,6 +72,7 @@ cur.execute(create_db)
 create_db = """CREATE TABLE IF NOT EXISTS """ + sole_table + """ (ID MEDIUMINT, Title text, Link text, Region text, Size text, Email text, Password text, Proxy text, Login text, Thumbnail text, MessageID text);"""
 cur.execute(create_db)
 create_db = """CREATE TABLE IF NOT EXISTS """ + hastey_table + """ (ID MEDIUMINT, Title text, Link text, Item text, Size text, Email text, Password text, Thumbnail text, MessageID text);"""
+cur.execute(create_db)
 conn.commit()
 
 #Read information from data files (allows carts to persist through sudden shutdowns and restarts).
@@ -548,7 +549,7 @@ async def on_message(message):
 					file.write(json.dumps(data, indent=4, sort_keys=True))
 					file.close()
 				#Repeat, but for Hastey.
-			elif "HasteyIO" in str(message.embeds[0]['footer']['text']):
+				elif "HasteyIO" in str(message.embeds[0]['footer']['text']):
 					title = diction['title']
 					link = diction['url']
 					for item in diction['fields']:
