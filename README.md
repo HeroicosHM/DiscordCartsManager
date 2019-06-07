@@ -7,8 +7,6 @@ This program is designed for the sneaker discord community to manage the various
 - [Phantom](https://ghostaio.com/)
 - [Balkobot](https://shop.balkobot.com/password)
 - [Sole AIO](https://soleaio.com/)
-
-# Coming Soon
 - [HasteyIO](https://hastey.io/#/)
 
 # Setup Tutorials
