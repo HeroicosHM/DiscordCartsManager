@@ -8,6 +8,9 @@ This program is designed for the sneaker discord community to manage the various
 - [Balkobot](https://shop.balkobot.com/password)
 - [Sole AIO](https://soleaio.com/)
 
+# Coming Soon
+- [HasteyIO](https://hastey.io/#/)
+
 # Setup Tutorials
 - [MySQL Database Setup](https://youtu.be/aEm0BN493sU)
 - [Discord Carts Manager Bot Setup](https://www.youtube.com/watch?v=WB15x3NKQv4)
