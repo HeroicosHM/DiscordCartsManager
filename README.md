@@ -16,7 +16,7 @@ This program is designed for the sneaker discord community to manage the various
 
 # Direct Support
 For more support, join me in my Discord server:
-- [Hero's Bot Hub](https://discord.gg/Fr3PpFr)
+- [Hero's Bot Hub](https://discord.gg/jjkvPb9)
 
 Or message me on Discord at:
 - Heroicos_HM#0310
