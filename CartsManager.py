@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Hello and welcome to my code!
 Before I begin, I want to make a couple disclaimers. A lot of waht I do in this program is considered
@@ -45,6 +47,7 @@ with open("./Config.json") as file:
 	balko_table = config['balko_table']
 	sole_table = config['sole_table']
 	hastey_table = config['hastey_table']
+	splashforce_table = config['splashforce_table']
 	TOKEN = config['TOKEN']
 	db_ip = config['database_ip']
 	db_user = config['database_username']
@@ -58,21 +61,43 @@ with open("./Config.json") as file:
 start_time = time.time()
 
 #Establish an initial connection to the database, and make sure the necessary tables exist.
-conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
+conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30,use_unicode=True)
 cur = conn.cursor(pymysql.cursors.DictCursor)
+cur.execute('SET NAMES utf8mb4')
+cur.execute('SET CHARACTER SET utf8mb4')
+cur.execute('SET character_set_connection=utf8mb4')
 
-create_db = """CREATE TABLE IF NOT EXISTS """ + adi_table + """ (ID MEDIUMINT, Title text, Link text, Email text, Password text, Size text, Desktop text, Mobile text, PID text, Thumbnail text, MessageID text, Timestamp text, Proxy text, HMAC text);"""
+alter_db = "ALTER DATABASE " + db_name + " CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;"
+cur.execute(alter_db)
+
+create_db = """CREATE TABLE IF NOT EXISTS """ + adi_table + """ (ID MEDIUMINT, Title text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Link text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Email text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Password text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Size text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Desktop text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Mobile text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, PID text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Thumbnail text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, MessageID text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Timestamp text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Proxy text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, HMAC text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci);"""
 cur.execute(create_db)
-create_db = """CREATE TABLE IF NOT EXISTS """ + latch_table + """ (ID MEDIUMINT, Title text, Link text, Email text, Password text, Size text, Region text, PID text, Thumbnail text, MessageID text);"""
+alter_table = "ALTER TABLE " + adi_table + " CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+cur.execute(alter_table)
+create_db = """CREATE TABLE IF NOT EXISTS """ + latch_table + """ (ID MEDIUMINT, Title text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Link text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Email text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Password text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Size text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Region text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, PID text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Thumbnail text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, MessageID text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci);"""
 cur.execute(create_db)
-create_db = """CREATE TABLE IF NOT EXISTS """ + phantom_table + """ (ID MEDIUMINT, Author text, Title text, Name text, Size text, Profile text, Site text, Account text, Link text, MessageID text);"""
+alter_table = "ALTER TABLE " + latch_table + " CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+cur.execute(alter_table)
+create_db = """CREATE TABLE IF NOT EXISTS """ + phantom_table + """ (ID MEDIUMINT, Author text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Title text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Name text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Size text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Profile text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Site text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Account text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Link text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, MessageID text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci);"""
 cur.execute(create_db)
-create_db = """CREATE TABLE IF NOT EXISTS """ + balko_table + """ (ID MEDIUMINT, Title text, Link text, Email text, Password text, Size text, Region text, PID text, Thumbnail text, MessageID text);"""
+alter_table = "ALTER TABLE " + phantom_table + " CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+cur.execute(alter_table)
+create_db = """CREATE TABLE IF NOT EXISTS """ + balko_table + """ (ID MEDIUMINT, Title text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Link text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Email text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Password text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Size text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Region text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, PID text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Thumbnail text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, MessageID text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci);"""
 cur.execute(create_db)
-create_db = """CREATE TABLE IF NOT EXISTS """ + sole_table + """ (ID MEDIUMINT, Title text, Link text, Region text, Size text, Email text, Password text, Proxy text, Login text, Thumbnail text, MessageID text);"""
+alter_table = "ALTER TABLE " + balko_table + " CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+cur.execute(alter_table)
+create_db = """CREATE TABLE IF NOT EXISTS """ + sole_table + """ (ID MEDIUMINT, Title text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Link text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Region text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Size text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Email text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Password text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Proxy text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Login text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Thumbnail text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, MessageID text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci);"""
 cur.execute(create_db)
-create_db = """CREATE TABLE IF NOT EXISTS """ + hastey_table + """ (ID MEDIUMINT, Title text, Link text, Item text, Size text, Email text, Password text, Thumbnail text, MessageID text);"""
+alter_table = "ALTER TABLE " + sole_table + " CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+cur.execute(alter_table)
+create_db = """CREATE TABLE IF NOT EXISTS """ + hastey_table + """ (ID MEDIUMINT, Title text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Link text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Item text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Size text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Email text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Password text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Thumbnail text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, MessageID text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci);"""
 cur.execute(create_db)
+alter_table = "ALTER TABLE " + hastey_table + " CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+cur.execute(alter_table)
+create_db = """CREATE TABLE IF NOT EXISTS """ + splashforce_table + """ (ID MEDIUMINT, Title text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Link text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Email text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Password text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, PID text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Size text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Desktop text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Mobile text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Thumbnail text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, MessageID text  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci);"""
+cur.execute(create_db)
+alter_table = "ALTER TABLE " + splashforce_table + " CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+cur.execute(alter_table)
 conn.commit()
 
 #Read information from data files (allows carts to persist through sudden shutdowns and restarts).
@@ -83,12 +108,12 @@ if os.path.isfile(data_file):
 		print(data)
 	else:
 		data = {}
-		data['IsDeleting'], data['AdiSplashMessages'], data['LatchKeyMessages'], data['PhantomMessages'], data['BalkoMessages'], data['SoleAIOMessages'], data['HasteyMessages'] = [], [], [], [], [], [], []
+		data['IsDeleting'], data['AdiSplashMessages'], data['LatchKeyMessages'], data['PhantomMessages'], data['BalkoMessages'], data['SoleAIOMessages'], data['HasteyMessages'], data['SplashforceMessages'] = [], [], [], [], [], [], [], []
 else:
 	file = open(data_file, 'w+')
 	file.close()
 	data = {}
-	data['IsDeleting'], data['AdiSplashMessages'], data['LatchKeyMessages'], data['PhantomMessages'], data['BalkoMessages'], data['SoleAIOMessages'], data['HasteyMessages'] = [], [], [], [], [], [], []
+	data['IsDeleting'], data['AdiSplashMessages'], data['LatchKeyMessages'], data['PhantomMessages'], data['BalkoMessages'], data['SoleAIOMessages'], data['HasteyMessages'], data['SplashforceMessages'] = [], [], [], [], [], [], [], []
 
 file = open(data_file, 'w+')
 file.write(json.dumps(data, indent=4, sort_keys=True))
@@ -182,8 +207,11 @@ async def on_message(message):
 		#This whole chunk is what gets the carts from the private channel and sends it in the public channel.
 		if len(message.embeds) > 0:
 			#Establish database connection.
-			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
+			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30,use_unicode=True)
 			cur = conn.cursor(pymysql.cursors.DictCursor)
+			cur.execute('SET NAMES utf8mb4')
+			cur.execute('SET CHARACTER SET utf8mb4')
+			cur.execute('SET character_set_connection=utf8mb4')
 
 			#Make sure the message is in a carts channel.
 			if str(message.channel.id) == carts_original_channel and message.author.id != bot.user.id:
@@ -615,6 +643,77 @@ async def on_message(message):
 					file = open(data_file, 'w+')
 					file.write(json.dumps(data, indent=4, sort_keys=True))
 					file.close()
+				#Repeat, but for Splashforce.
+				elif "Splashforce" in str(message.embeds[0]['footer']['text']):
+					"""CREATE TABLE IF NOT EXISTS """ + splashforce_table + """ (ID MEDIUMINT, Title text, Link text, Email text, Password text, PID text, Size text, Desktop text, Mobile text, Thumbnail text, MessageID text);"""
+					title = diction['title']
+					link = diction['url']
+					for item in diction['fields']:
+						if 'Pid' in item['name']:
+							pid = item['value']
+						elif 'Size' in item['name']:
+							size = item['value']
+						elif 'Email' in item['name']:
+							email = item['value']
+						elif 'Password' in item['name']:
+							password = item['value']
+						elif 'Desktop Login' in item['name']:
+							desktop_login = item['value']
+						elif 'Mobile Login' in item['name']:
+							mobile_login = item['value']
+
+					try:
+						thumbnail = diction['thumbnail']['url']
+					except:
+						thumbnail = "N/A"
+
+					message_id = message.id
+
+					sql = "SELECT * FROM `" + splashforce_table + "` ORDER BY ID DESC LIMIT 1"
+					cur.execute(sql)
+					entry_number = cur.fetchall()
+					if len(entry_number) == 0:
+						entry_number = str(1)
+					else:
+						entry_number = str(entry_number[0]['ID'] + 1)
+
+					#Insert all of that information into the database for that specific cart type.
+					insert_data = """INSERT INTO  """ + splashforce_table + """ (ID, Title, Link, Email, Password, PID, Size, Desktop, Mobile, Thumbnail, MessageID) VALUES ('""" + entry_number + """','""" + title + """', '""" + link + """', '""" + email + """', '""" + password + """', '""" + pid + """', '""" + size + """', '""" + desktop_login + """', '""" + mobile_login + """', '""" + thumbnail + """', '""" + message_id + """');"""
+					cur.execute(insert_data)
+					conn.commit()
+
+					embed = discord.Embed(
+						title = title,
+						color = embed_color,
+						timestamp = datetime.datetime.now(datetime.timezone.utc)
+					)
+					embed.add_field(
+						name = "**Pid**",
+						value = pid
+					)
+					embed.add_field(
+						name = "**Size**",
+						value = size
+					)
+					embed.add_field(
+						name = "**Domain**",
+						value = urlparse(link).netloc
+					)
+					embed.set_footer(
+						text = "{} | Cart #{}".format(footer_text, entry_number),
+						icon_url = footer_icon
+					)
+					if thumbnail == "N/A":
+						pass
+					else:
+						embed.set_thumbnail(
+							url = thumbnail
+						)
+					r = await bot.send_message(discord.Object(id=carts_formatted_channel), embed = embed)
+					await bot.add_reaction(r, "🛒")
+					data['SplashforceMessages'].append(r.id)
+					file = open(data_file, 'w+')
+					file.write(json.dumps(data, indent=4, sort_keys=True))
 			else:
 				pass
 
@@ -644,8 +743,11 @@ async def on_socket_raw_receive(the_reaction):
 			#Immediately mark the cart as claimed, or rather, no longer *not* claimed.
 			data['AdiSplashMessages'].remove(message_id)
 			#Establish DB connection
-			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
+			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30,use_unicode=True)
 			cur = conn.cursor(pymysql.cursors.DictCursor)
+			cur.execute('SET NAMES utf8mb4')
+			cur.execute('SET CHARACTER SET utf8mb4')
+			cur.execute('SET character_set_connection=utf8mb4')
 			file = open(data_file, 'w+')
 			file.write(json.dumps(data, indent=4, sort_keys=True))
 			file.close()
@@ -776,8 +878,11 @@ async def on_socket_raw_receive(the_reaction):
 		#Repeat for Latchkey.
 		elif message_id in data['LatchKeyMessages']:
 			data['LatchKeyMessages'].remove(message_id)
-			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
+			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30,use_unicode=True)
 			cur = conn.cursor(pymysql.cursors.DictCursor)
+			cur.execute('SET NAMES utf8mb4')
+			cur.execute('SET CHARACTER SET utf8mb4')
+			cur.execute('SET character_set_connection=utf8mb4')
 			file = open(data_file, 'w+')
 			file.write(json.dumps(data, indent=4, sort_keys=True))
 			file.close()
@@ -873,8 +978,11 @@ async def on_socket_raw_receive(the_reaction):
 		#Repeat for Phantom.
 		elif message_id in data['PhantomMessages']:
 			data['PhantomMessages'].remove(message_id)
-			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
+			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30,use_unicode=True)
 			cur = conn.cursor(pymysql.cursors.DictCursor)
+			cur.execute('SET NAMES utf8mb4')
+			cur.execute('SET CHARACTER SET utf8mb4')
+			cur.execute('SET character_set_connection=utf8mb4')
 			file = open(data_file, 'w+')
 			file.write(json.dumps(data, indent=4, sort_keys=True))
 			file.close()
@@ -966,8 +1074,11 @@ async def on_socket_raw_receive(the_reaction):
 		#Repeat for Balkobot.
 		elif message_id in data['BalkoMessages']:
 			data['BalkoMessages'].remove(message_id)
-			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
+			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30,use_unicode=True)
 			cur = conn.cursor(pymysql.cursors.DictCursor)
+			cur.execute('SET NAMES utf8mb4')
+			cur.execute('SET CHARACTER SET utf8mb4')
+			cur.execute('SET character_set_connection=utf8mb4')
 			file = open(data_file, 'w+')
 			file.write(json.dumps(data, indent=4, sort_keys=True))
 			file.close()
@@ -1059,8 +1170,11 @@ async def on_socket_raw_receive(the_reaction):
 		#Repeat for Sole AIO.
 		elif message_id in data['SoleAIOMessages']:
 			data['SoleAIOMessages'].remove(message_id)
-			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
+			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30,use_unicode=True)
 			cur = conn.cursor(pymysql.cursors.DictCursor)
+			cur.execute('SET NAMES utf8mb4')
+			cur.execute('SET CHARACTER SET utf8mb4')
+			cur.execute('SET character_set_connection=utf8mb4')
 			file = open(data_file, 'w+')
 			file.write(json.dumps(data, indent=4, sort_keys=True))
 			file.close()
@@ -1170,8 +1284,11 @@ async def on_socket_raw_receive(the_reaction):
 		#Repeat for Hastey.
 		elif message_id in data['HasteyMessages']:
 			data['HasteyMessages'].remove(message_id)
-			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30)
+			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30,use_unicode=True)
 			cur = conn.cursor(pymysql.cursors.DictCursor)
+			cur.execute('SET NAMES utf8mb4')
+			cur.execute('SET CHARACTER SET utf8mb4')
+			cur.execute('SET character_set_connection=utf8mb4')
 			file = open(data_file, 'w+')
 			file.write(json.dumps(data, indent=4, sort_keys=True))
 			file.close()
@@ -1266,7 +1383,115 @@ async def on_socket_raw_receive(the_reaction):
 				await bot.edit_message(message, embed = new_embed)
 			else:
 				pass
+		#Repeat for Splashforce.
+		elif message_id in data['SplashforceMessages']:
+			data['SplashforceMessages'].remove(message_id)
+			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30,use_unicode=True)
+			cur = conn.cursor(pymysql.cursors.DictCursor)
+			cur.execute('SET NAMES utf8mb4')
+			cur.execute('SET CHARACTER SET utf8mb4')
+			cur.execute('SET character_set_connection=utf8mb4')
+			file = open(data_file, 'w+')
+			file.write(json.dumps(data, indent=4, sort_keys=True))
+			file.close()
+			channel = channel_id
+			if str(channel) == carts_formatted_channel:
+				my_channel = bot.get_channel(channel_id)
+				message = await bot.get_message(my_channel, message_id)
+				await bot.clear_reactions(message)
+				diction = message.embeds[0]
+				cart_text = diction['footer']['text']
+				cart_number = int(re.search(r'\d+', cart_text).group(0))
+				sql = """SELECT * FROM  """ + splashforce_table + """ WHERE ID = %s""" % cart_number
+				cur.execute(sql)
+				cart_info = cur.fetchall()[0]
+				cart_id = cart_info['ID']
+				cart_title = cart_info['Title']
+				cart_link = cart_info['Link']
+				cart_pid = cart_info['PID']
+				cart_size = cart_info['Size']
+				cart_email = cart_info['Email']
+				cart_pass = cart_info['Password']
+				cart_desktop = cart_info['Desktop']
+				cart_mobile = cart_info['Mobile']
+				cart_thumbnail = cart_info['Thumbnail']
+				cart_discord_link = cart_info['MessageID']
 
+				embed = discord.Embed(
+					title = cart_title,
+					url = cart_link,
+					color = embed_color,
+					timestamp = datetime.datetime.now(datetime.timezone.utc)
+				)
+				embed.add_field(
+					name = "**Email**",
+					value = cart_email,
+					inline = True
+				)
+				embed.add_field(
+					name = "**Password**",
+					value = cart_pass,
+					inline = True
+				)
+				embed.add_field(
+					name = "**Pid**",
+					value = cart_pid,
+					inline = True
+				)
+				embed.add_field(
+					name = "**Size**",
+					value = cart_size,
+					inline = True
+				)
+				embed.add_field(
+					name = "**Desktop Login**",
+					value = cart_desktop,
+					inline = True
+				)
+				embed.add_field(
+					name = "**Mobile Login**",
+					value = cart_mobile,
+					inline = True
+				)
+				embed.set_footer(
+					text = "{} | Cart #{}".format(footer_text, cart_id),
+					icon_url = footer_icon
+				)
+				if cart_thumbnail == "N/A":
+					pass
+				else:
+					embed.set_thumbnail(
+						url = cart_thumbnail
+					)
+				sql = """DELETE FROM  """ + splashforce_table + """ WHERE ID = %s""" % cart_number
+				cur.execute(sql)
+				conn.commit()
+				server = message.server
+				author = server.get_member(user_id)
+
+				await bot.send_message(author, embed = embed)
+
+				user = await bot.get_user_info(user_id)
+				new_title = "Cart Claimed!"
+				new_footer_text = "%s | Claimed by %s" % (footer_text, user.name)
+				new_footer_icon_url = diction['footer']['icon_url']
+				try:
+					new_thumbnail = diction['thumbnail']['url']
+				except:
+					new_thumbnail = "N/A"
+				new_embed = discord.Embed(
+					title = new_title,
+					description = "*This cart was claimed by `%s` and is no longer available.*" % user.name,
+					color = embed_color,
+					timestamp = datetime.datetime.now(datetime.timezone.utc)
+				)
+				new_embed.set_footer(
+					text = new_footer_text,
+					icon_url = new_footer_icon_url
+				)
+				await bot.edit_message(message, embed = new_embed)
+			else:
+				pass
 		else:
 			pass
 

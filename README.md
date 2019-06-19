@@ -8,6 +8,7 @@ This program is designed for the sneaker discord community to manage the various
 - [Balkobot](https://shop.balkobot.com/password)
 - [Sole AIO](https://soleaio.com/)
 - [HasteyIO](https://hastey.io/#/)
+- [Splashforce](https://twitter.com/splashforcebot)
 
 # Setup Tutorials
 - [MySQL Database Setup](https://youtu.be/aEm0BN493sU)

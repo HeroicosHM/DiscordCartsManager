@@ -12,6 +12,7 @@
   "balko_table":"BalkoCarts",
   "sole_table":"SoleAIOCarts",
   "hastey_table":"HasteyCarts",
+  "splashforce_table":"SplashforceCarts",
   "TOKEN":"YOUR_TOKEN_HERE",
   "database_ip":"YOUR IP",
   "database_username":"YOUR USERNAME",
