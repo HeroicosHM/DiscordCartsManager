@@ -518,6 +518,8 @@ async def on_message(message):
 							size = item['value']
 						elif 'Login' in item['name']:
 							login = item['value']
+						elif 'Mobile Link' in item['name']:
+							login = item['value']
 						elif 'Region' in item['name']:
 							region = item['value']
 						elif 'Proxy' in item['name']:
@@ -1233,7 +1235,7 @@ async def on_socket_raw_receive(the_reaction):
 					inline = False
 				)
 				embed.add_field(
-					name = "**Mobile Login**",
+					name = "**Mobile Link**",
 					value = cart_login,
 					inline = False
 				)
