@@ -13,11 +13,13 @@
   "sole_table":"SoleAIOCarts",
   "hastey_table":"HasteyCarts",
   "splashforce_table":"SplashforceCarts",
+  "cyber_table": "CyberCarts",
   "TOKEN":"YOUR_TOKEN_HERE",
   "database_ip":"YOUR IP",
   "database_username":"YOUR USERNAME",
   "database_password":"YOUR PASSWORD",
   "database_name":"DATABASE NAME",
   "footer_icon_url":"URL HERE",
-  "online_message":"Carts Manager Online!"
+  "online_message":"Carts Manager Online!",
+  "DO NOT TOUCH THIS IT WILL BREAK EVERYTHING": false
 }

@@ -2,11 +2,11 @@
 
 """
 Hello and welcome to my code!
-Before I begin, I want to make a couple disclaimers. A lot of waht I do in this program is considered
+Before I begin, I want to make a couple disclaimers. A lot of what I do in this program is considered
 very rough around the edges and fairly brute force. For those of you developers looking at this,
 I know that this program is not the cleanest, but I don't have the energy to completely redo it.
 
-If you use this program, please give credit to me somehow.
+If you use this program, please give credit to me somehow, or refer back to the Github. This is meant to be an open resource for anyone to access.
 Reach out to me on Discord:
 Heroicos_HM#0310
 """
@@ -48,6 +48,7 @@ with open("./Config.json") as file:
 	sole_table = config['sole_table']
 	hastey_table = config['hastey_table']
 	splashforce_table = config['splashforce_table']
+	cyber_table = config['cyber_table']
 	TOKEN = config['TOKEN']
 	db_ip = config['database_ip']
 	db_user = config['database_username']
@@ -56,6 +57,7 @@ with open("./Config.json") as file:
 	footer_icon = config['footer_icon_url']
 	online_message = config['online_message']
 	prefix = config['prefix']
+	updated = config['DO NOT TOUCH THIS IT WILL BREAK EVERYTHING']
 
 	#Get the start time for the uptime command.
 start_time = time.time()
@@ -69,6 +71,33 @@ cur.execute('SET character_set_connection=utf8mb4')
 
 alter_db = "ALTER DATABASE " + db_name + " CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;"
 cur.execute(alter_db)
+
+if updated == False:
+	sql = 'DROP TABLE ' + adi_table + ';'
+	cur.execute(sql)
+	sql = 'DROP TABLE ' + latch_table + ';'
+	cur.execute(sql)
+	sql = 'DROP TABLE ' + phantom_table + ';'
+	cur.execute(sql)
+	sql = 'DROP TABLE ' + balko_table + ';'
+	cur.execute(sql)
+	sql = 'DROP TABLE ' + sole_table + ';'
+	cur.execute(sql)
+	sql = 'DROP TABLE ' + hastey_table + ';'
+	cur.execute(sql)
+	sql = 'DROP TABLE ' + splashforce_table + ';'
+	cur.execute(sql)
+	sql = 'DROP TABLE ' + cyber_table + ';'
+	cur.execute(sql)
+	conn.commit()
+	current_config = json.loads(open('Config.json').read())
+	current_config['DO NOT TOUCH THIS IT WILL BREAK EVERYTHING'] = True
+	file = open('Config.json', 'w+')
+	file.write(json.dumps(current_config, indent=4))
+	file.close()
+	print(data_file)
+	if os.path.isfile(data_file):
+		os.remove(data_file)
 
 create_db = """CREATE TABLE IF NOT EXISTS """ + adi_table + """ (ID MEDIUMINT, Title text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Link text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Email text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Password text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Size text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Desktop text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Mobile text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, PID text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Thumbnail text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, MessageID text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Timestamp text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Proxy text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, HMAC text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci);"""
 cur.execute(create_db)
@@ -99,6 +128,10 @@ cur.execute(create_db)
 alter_table = "ALTER TABLE " + splashforce_table + " CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
 cur.execute(alter_table)
 conn.commit()
+create_db = """CREATE TABLE IF NOT EXISTS """ + cyber_table + """ (ID MEDIUMINT, Title text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Description text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Link text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Store text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Size text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Profile text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, OrderNum text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, Thumbnail text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, MessageID text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci);"""
+cur.execute(create_db)
+alter_table = "ALTER TABLE " + cyber_table + " CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+cur.execute(alter_table)
 
 #Read information from data files (allows carts to persist through sudden shutdowns and restarts).
 if os.path.isfile(data_file):
@@ -108,12 +141,12 @@ if os.path.isfile(data_file):
 		print(data)
 	else:
 		data = {}
-		data['IsDeleting'], data['AdiSplashMessages'], data['LatchKeyMessages'], data['PhantomMessages'], data['BalkoMessages'], data['SoleAIOMessages'], data['HasteyMessages'], data['SplashforceMessages'] = [], [], [], [], [], [], [], []
+		data['IsDeleting'], data['AdiSplashMessages'], data['LatchKeyMessages'], data['PhantomMessages'], data['BalkoMessages'], data['SoleAIOMessages'], data['HasteyMessages'], data['SplashforceMessages'], data['CyberMessages'] = [], [], [], [], [], [], [], [], []
 else:
 	file = open(data_file, 'w+')
 	file.close()
 	data = {}
-	data['IsDeleting'], data['AdiSplashMessages'], data['LatchKeyMessages'], data['PhantomMessages'], data['BalkoMessages'], data['SoleAIOMessages'], data['HasteyMessages'], data['SplashforceMessages'] = [], [], [], [], [], [], [], []
+	data['IsDeleting'], data['AdiSplashMessages'], data['LatchKeyMessages'], data['PhantomMessages'], data['BalkoMessages'], data['SoleAIOMessages'], data['HasteyMessages'], data['SplashforceMessages'], data['CyberMessages'] = [], [], [], [], [], [], [], [], []
 
 file = open(data_file, 'w+')
 file.write(json.dumps(data, indent=4, sort_keys=True))
@@ -300,6 +333,7 @@ async def on_message(message):
 					file.close()
 
 				#Repeat, but for Latchkey.
+				#Repeat, but for LatchKey.
 				elif "LatchKey" in str(message.embeds[0]['footer']['text']):
 					title = diction['title']
 					link = diction['url']
@@ -432,7 +466,6 @@ async def on_message(message):
 					file = open(data_file, 'w+')
 					file.write(json.dumps(data, indent=4, sort_keys=True))
 					file.close()
-
 				#Repeat, but for Balkobot.
 				elif "Balkobot" in str(message.embeds[0]['footer']['text']):
 					title = diction['title']
@@ -716,6 +749,78 @@ async def on_message(message):
 					data['SplashforceMessages'].append(r.id)
 					file = open(data_file, 'w+')
 					file.write(json.dumps(data, indent=4, sort_keys=True))
+				#Repeat, but for Cyber.
+				elif "CyberAIO" in str(message.embeds[0]['footer']['text']):
+						#Extract all of the information from the cart.
+						title = diction['title']
+						if 'url' in diction.keys():
+							link = diction['url']
+						else:
+							link = "N/A"
+						description = diction['description']
+						found_order = False
+						for item in diction['fields']:
+							if 'Store' in item['name']:
+								store = item['value']
+							if 'Size' in item['name']:
+								size = item['value']
+							if 'Profile' in item['name']:
+								profile = item['value']
+							if 'Order' in item['name']:
+								order = item['value']
+								found_order = True
+						if not found_order:
+							order = "N/A"
+						try:
+							thumbnail = diction['thumbnail']['url']
+						except:
+							thumbnail = "N/A"
+
+						message_id = message.id
+
+						sql = "SELECT * FROM `" + cyber_table + "` ORDER BY ID DESC LIMIT 1"
+						cur.execute(sql)
+						entry_number = cur.fetchall()
+						if len(entry_number) == 0:
+							entry_number = str(1)
+						else:
+							entry_number = str(entry_number[0]['ID'] + 1)
+
+						#Insert all of that information into the database for that specific cart type.
+						insert_data = """INSERT INTO  """ + cyber_table + """ (ID, Title, Description, Link, Store, Size, Profile, OrderNum, Thumbnail, MessageID) VALUES ('""" + entry_number + """','""" + title + """', '""" + description + """', '""" + link + """', '""" + store + """', '""" + size + """', '""" + profile + """', '""" + order + """', '""" + thumbnail + """','""" + message_id + """');"""
+						cur.execute(insert_data)
+						conn.commit()
+
+						#Send the reformatted cart into the public cart channel.
+						embed = discord.Embed(
+							description = description,
+							color = embed_color,
+							timestamp = datetime.datetime.now(datetime.timezone.utc)
+						)
+						embed.add_field(
+							name = "**STORE**",
+							value = store
+						)
+						embed.add_field(
+							name = "**SIZE**",
+							value = size
+						)
+						if thumbnail == "N/A":
+							pass
+						else:
+							embed.set_thumbnail(
+								url = thumbnail
+							)
+						embed.set_footer(
+							text = "{} | Cart #{}".format(footer_text, entry_number),
+							icon_url = footer_icon
+						)
+						r = await bot.send_message(discord.Object(id=carts_formatted_channel), embed = embed)
+						await bot.add_reaction(r, "🛒")
+						data['CyberMessages'].append(r.id)
+						file = open(data_file, 'w+')
+						file.write(json.dumps(data, indent=4, sort_keys=True))
+						file.close()
 			else:
 				pass
 
@@ -1466,6 +1571,114 @@ async def on_socket_raw_receive(the_reaction):
 						url = cart_thumbnail
 					)
 				sql = """DELETE FROM  """ + splashforce_table + """ WHERE ID = %s""" % cart_number
+				cur.execute(sql)
+				conn.commit()
+				server = message.server
+				author = server.get_member(user_id)
+
+				await bot.send_message(author, embed = embed)
+
+				user = await bot.get_user_info(user_id)
+				new_title = "Cart Claimed!"
+				new_footer_text = "%s | Claimed by %s" % (footer_text, user.name)
+				new_footer_icon_url = diction['footer']['icon_url']
+				try:
+					new_thumbnail = diction['thumbnail']['url']
+				except:
+					new_thumbnail = "N/A"
+				new_embed = discord.Embed(
+					title = new_title,
+					description = "*This cart was claimed by `%s` and is no longer available.*" % user.name,
+					color = embed_color,
+					timestamp = datetime.datetime.now(datetime.timezone.utc)
+				)
+				new_embed.set_footer(
+					text = new_footer_text,
+					icon_url = new_footer_icon_url
+				)
+				await bot.edit_message(message, embed = new_embed)
+			else:
+				pass
+		#Repeat for Splashforce.
+		elif message_id in data['CyberMessages']:
+			data['CyberMessages'].remove(message_id)
+			conn = pymysql.connect(db_ip,user=db_user,passwd=db_pass,db=db_name,connect_timeout=30,use_unicode=True)
+			cur = conn.cursor(pymysql.cursors.DictCursor)
+			cur.execute('SET NAMES utf8mb4')
+			cur.execute('SET CHARACTER SET utf8mb4')
+			cur.execute('SET character_set_connection=utf8mb4')
+			file = open(data_file, 'w+')
+			file.write(json.dumps(data, indent=4, sort_keys=True))
+			file.close()
+			channel = channel_id
+			if str(channel) == carts_formatted_channel:
+				my_channel = bot.get_channel(channel_id)
+				message = await bot.get_message(my_channel, message_id)
+				await bot.clear_reactions(message)
+				diction = message.embeds[0]
+				cart_text = diction['footer']['text']
+				cart_number = int(re.search(r'\d+', cart_text).group(0))
+				sql = """SELECT * FROM  """ + cyber_table + """ WHERE ID = %s""" % cart_number
+				cur.execute(sql)
+				cart_info = cur.fetchall()[0]
+				cart_id = cart_info['ID']
+				cart_title = cart_info['Title']
+				cart_link = cart_info['Link']
+				cart_description = cart_info['Description']
+				cart_store = cart_info['Store']
+				cart_size = cart_info['Size']
+				cart_profile = cart_info['Profile']
+				cart_order = cart_info['OrderNum']
+				cart_thumbnail = cart_info['Thumbnail']
+				cart_discord_link = cart_info['MessageID']
+
+				if cart_link == "N/A":
+					embed = discord.Embed(
+						title = cart_title,
+						description = cart_description,
+						color = embed_color,
+						timestamp = datetime.datetime.now(datetime.timezone.utc)
+					)
+				else:
+					embed = discord.Embed(
+						title = cart_title,
+						url = cart_link,
+						description = cart_description,
+						color = embed_color,
+						timestamp = datetime.datetime.now(datetime.timezone.utc)
+					)
+				embed.add_field(
+					name = "Store",
+					value = cart_store,
+					inline = True
+				)
+				embed.add_field(
+					name = "Size",
+					value = cart_size,
+					inline = True
+				)
+				embed.add_field(
+					name = "Profile",
+					value = cart_profile,
+					inline = True
+				)
+				if cart_order != "N/A":
+					embed.add_field(
+						name = "Order",
+						value = cart_order,
+						inline = True
+					)
+				embed.set_footer(
+					text = "{} | Cart #{}".format(footer_text, cart_id),
+					icon_url = footer_icon
+				)
+				if cart_thumbnail == "N/A":
+					pass
+				else:
+					embed.set_thumbnail(
+						url = cart_thumbnail
+					)
+				sql = """DELETE FROM  """ + cyber_table + """ WHERE ID = %s""" % cart_number
 				cur.execute(sql)
 				conn.commit()
 				server = message.server
